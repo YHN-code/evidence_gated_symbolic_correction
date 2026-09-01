@@ -1,0 +1,57 @@
+llm:
+  provider: openai-compatible
+  model: gpt-4.1-mini
+  base_url: https://api.openai.com/v1/chat/completions
+  api_key: your-api-key
+  temperature: 0.2
+  timeout_s: 60
+  max_retries: 3
+  structured_output_repair_attempts: 2
+  retry_backoff_s: 2.0
+  max_tokens: 1200
+  max_rounds: 15
+  top_k_feedback: 5
+  early_stop_relative_rmse: 0.01
+  early_stop_patience: 3
+  agent:
+    max_rounds: 15
+    available_actions:
+      - inspect_residual_pattern
+      - query_knowledge
+      - revise_variables
+      - propose_feature_family
+      - broaden_search
+      - remove_unstable_terms
+      - tighten_constraints
+      - compare_candidate_family
+      - compare_alternative_families
+      - screen_candidate_families
+      - inspect_validation_failures
+      - test_term_stability
+      - challenge_formula_complexity
+      - stress_test_boundaries
+      - test_remaining_structure
+      - test_leave_one_angle
+      - keep_best
+      - accept_current_best
+    context_recent_rounds: 2
+    knowledge_top_k: 3
+    validation_top_k: 8
+    validation_budget_total: 48
+    final_audit_enabled: true
+    audit_recovery_rounds: 3
+    structural_audit_enabled: true
+    structural_validation_top_k: 8
+    structural_bootstrap_samples: 1000
+    structural_confidence: 0.95
+    allow_accept_before_round: 2
+    acceptance_requirements:
+      - physical_violations_zero
+      - improves_over_baseline
+      - complexity_justified
+      - small_sample_risk_recorded
+      - validation_noninferior_to_incumbent
+      - validation_improves_over_baseline
+      - no_unresolved_experiments
+      - agent_search_performed
+      - current_best_post_residual_inspected

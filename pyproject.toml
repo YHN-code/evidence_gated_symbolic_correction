@@ -1,0 +1,39 @@
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "evidence-gated-symbolic-correction"
+version = "0.1.0"
+description = "Reproducibility code for evidence-gated symbolic correction of geomechanical models."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "numpy>=1.26",
+  "pandas>=2.1",
+  "scipy>=1.11",
+  "matplotlib>=3.8",
+  "svgpath2mpl>=1.0.0",
+  "seaborn>=0.13",
+  "pyyaml>=6.0",
+  "pydantic>=2.5",
+  "tqdm>=4.66",
+  "openpyxl>=3.1",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.0"]
+pysr = ["pysr==1.5.9"]
+flac3d = ["pywinpty>=3.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"asrc.plotting" = ["icons/lucide/*.svg", "icons/lucide/LICENSE", "icons/lucide/README.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+addopts = "--basetemp=.pytest_tmp"

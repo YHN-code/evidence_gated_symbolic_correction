@@ -1,0 +1,25 @@
+artifact:
+  schema_version: 1
+  frozen_at_stage: structural_ambiguity_resolution_confirmation_v2
+  source_run_id: structural_ambiguity_resolution_confirmation_v2
+  source_seed: 263171
+  source_noise_multiplier: 1.0
+  source_checkpoint: outputs/runs/structural_ambiguity_resolution_confirmation_v2/checkpoints/structural_ambiguity/seed_263171_noise_1p000_SR03.json
+  source_checkpoint_sha256: f55f40b0407d14d55755a6cad9c47a236e668b821ffb8143604d1f558473747f
+  task_id: SR03
+  mechanism: nonlinear cohesion softening
+  result_status: accepted
+  adequacy_accepted: true
+  expected_library_coverage: true
+  physical_violations: 0
+  location: cohesion
+  edit_type: replace_component
+  family_id: exponential_decay
+  selected_expression: a0 * exp(-a1 * damage)
+  selected_parameters:
+    a0: 3.9957536779973744
+    a1: 2.1919009047951126
+  baseline_amplitude: 4.0
+  locked_primary_rmse: 0.0033007760858648136
+  locked_diagnostic_rmse: 0.006271474563143168
+  acquired_observations: 8

@@ -1,0 +1,67 @@
+protocol:
+  id: uj_c1_known_law_recovery
+  version: "1.0"
+  description: >-
+    Controlled recovery of a perfect-plastic ubiquitous-joint shear law from
+    three-dimensional material-point paths. This is a known-law control, not a
+    claim of discovering a new constitutive model.
+
+material:
+  elastic:
+    young_mpa: 20000.0
+    poisson: 0.24
+  intact_matrix:
+    model: mohr_coulomb
+    yield_active: false
+    cohesion_mpa: 100.0
+    friction_deg: 40.0
+    note: The matrix remains elastic in C1 to isolate the missing weak-plane mechanism.
+  reference_joint:
+    cohesion_mpa: 1.2
+    friction_deg: 28.0
+    dilation_deg: 0.0
+    tension_mpa: 1.0
+
+sampling:
+  calibration_beta_deg: [0.0, 15.0, 30.0, 45.0, 60.0, 75.0, 90.0]
+  locked_beta_deg: [7.5, 22.5, 37.5, 52.5, 67.5, 82.5]
+  calibration_pressure_mpa: [5.0, 10.0, 15.0]
+  locked_pressure_mpa: [7.5, 12.5]
+  calibration_paths: [monotonic_shear, compression_shear]
+  locked_paths: [reverse_shear, cyclic_shear]
+  path_definitions:
+    monotonic_shear:
+      steps: 24
+      increment: 0.0001
+    compression_shear:
+      steps: 24
+      increment: 0.00008
+      axial_ratio: 0.5
+    reverse_shear:
+      steps: 36
+      forward_steps: 24
+      increment: 0.0001
+    cyclic_shear:
+      steps: 48
+      phase_steps: [18, 12, 18]
+      increment: 0.0001
+
+search:
+  bounded_families:
+    - constant
+    - normal_linear
+    - normal_quadratic
+    - global_pressure_linear
+    - orientation_linear
+  generic_family: generic_polynomial
+  complexity_penalty_mpa: 0.0001
+  violation_penalty_mpa: 10.0
+
+acceptance:
+  selected_family: normal_linear
+  maximum_locked_joint_rmse_mpa: 0.05
+  maximum_relative_cohesion_error: 0.03
+  maximum_friction_error_deg: 1.0
+  maximum_physical_violations: 0
+  require_improvement_over_baseline: true
+  require_all_locked_partitions: true

@@ -1,0 +1,78 @@
+protocol:
+  id: subi_c2_path_dependent_recovery
+  version: "1.0"
+  description: >-
+    Controlled recovery of a path-dependent weak-plane cohesion-softening law
+    using the FLAC3D SUBI plastic-shear state convention.
+
+material:
+  elastic:
+    young_mpa: 20000.0
+    poisson: 0.24
+  intact_matrix:
+    yield_active: false
+    cohesion_mpa: 100.0
+    friction_deg: 40.0
+  reference_joint:
+    peak_cohesion_mpa: 1.5
+    residual_cohesion_mpa: 0.35
+    friction_deg: 20.0
+    dilation_deg: 0.0
+    tension_mpa: 1.0
+    softening_scale: 0.00035
+    evolution_family: exponential
+
+sampling:
+  calibration_beta_deg: [0.0, 10.0, 20.0, 70.0, 80.0, 90.0]
+  locked_beta_deg: [5.0, 15.0, 75.0, 85.0]
+  calibration_pressure_mpa: [3.0, 6.0]
+  locked_pressure_mpa: [4.5]
+  calibration_paths: [monotonic_softening, unload_reload]
+  locked_paths: [extended_monotonic, two_stage_reload]
+  path_definitions:
+    monotonic_softening:
+      engineering_shear_increment: 0.0001
+      phases: [[60, 1]]
+    unload_reload:
+      engineering_shear_increment: 0.0001
+      phases: [[35, 1], [10, -1], [35, 1]]
+    extended_monotonic:
+      engineering_shear_increment: 0.0001
+      phases: [[100, 1]]
+    two_stage_reload:
+      engineering_shear_increment: 0.0001
+      phases: [[40, 1], [15, -1], [55, 1]]
+
+search:
+  bounded_families:
+    - constant
+    - linear_clipped
+    - exponential
+    - rational
+    - bilinear
+  generic_family: polynomial
+  complexity_penalty_mpa: 0.0001
+  violation_penalty_mpa: 10.0
+  maximum_function_evaluations: 2000
+
+agent:
+  available_actions:
+    - inspect_softening_state
+    - compare_evolution_family
+    - test_unseen_path
+    - challenge_monotonicity
+    - accept_current_best
+  knowledge_topics:
+    - weak_plane
+    - strain_softening
+    - plastic_dissipation
+    - path_dependent_validation
+
+acceptance:
+  selected_family: exponential
+  maximum_locked_joint_rmse_mpa: 0.02
+  maximum_relative_peak_error: 0.05
+  maximum_relative_residual_error: 0.10
+  maximum_relative_scale_error: 0.15
+  maximum_physical_violations: 0
+  require_improvement_over_perfect_plastic_baseline: true

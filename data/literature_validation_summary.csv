@@ -1,0 +1,6 @@
+
+dataset,baseline_group_cv_rmse,revised_group_cv_rmse,status
+Le.Gs,2.3771,2.4542,provisional
+My.Sc,2.1954,1.5255,accepted
+Longmaxi,0.2131,0.1350,accepted
+Jixi,0.0214,0.0223,provisional

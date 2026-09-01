@@ -1,0 +1,44 @@
+protocol:
+  name: structural_ambiguity_resolution_confirmation_v2
+  version: 2.0-frozen
+  status: frozen_confirmation
+  frozen_after_optimizer_audit: structural_ambiguity_resolution_confirmation_v1
+  optimizer_change: >-
+    Replace independent random restarts with equal-budget Latin-hypercube
+    multistarts; all ambiguity, adequacy, acquisition, and gate settings remain fixed.
+  purpose: >-
+    Confirm robust ambiguity-gated structural revision on a second set of unseen
+    random seeds after correcting generic nonlinear-start coverage.
+
+data:
+  fit_size: 48
+  validation_size: 32
+  locked_size: 128
+
+matrix:
+  seeds: [263171, 619403, 845729]
+  noise_multipliers: [1.0, 2.0]
+
+evaluation:
+  diagnostic_weight: 1.0
+  complexity_penalty: 0.002
+  acceptance_noise_multiplier: 1.75
+  optimizer_restarts: 5
+  optimizer_max_nfev: 2500
+
+ambiguity:
+  standard_error_multiplier: 1.96
+  practical_loss_margin: 0.0
+  adequacy_significance_level: 0.01
+
+acquisition:
+  maximum_rounds: 3
+  pool_size: 256
+  batch_size: 8
+
+development_gate:
+  minimum_covered_structure_recovery_rate: 0.90
+  minimum_covered_acceptance_rate: 0.90
+  maximum_uncovered_acceptance_rate: 0.0
+  maximum_unresolved_rate: 0.10
+  maximum_mean_acquired_observations: 12.0

@@ -1,0 +1,231 @@
+; ASRC FLAC3D 7 hydropower-inspired cavern V2: __CASE_ID__.
+; Generated body-fitted grid with explicit horizontal excavation interfaces.
+
+model new
+model title 'ASRC hydropower-inspired cavern V2 __CASE_ID__'
+model large-strain off
+model deterministic on
+fish automatic-create off
+
+[global beta_deg = __BETA_DEG__]
+[global psi_deg = __PSI_DEG__]
+[global stress_ratio = __STRESS_RATIO__]
+[global major_stress = __MAJOR_STRESS_PA__]
+[global minor_stress = major_stress * stress_ratio]
+[global cavern_half_width = __CAVERN_HALF_WIDTH_M__]
+[global cavern_half_height = __CAVERN_HALF_HEIGHT_M__]
+[global arch_radius = cavern_half_width]
+[global springline_z = __SPRINGLINE_Z_M__]
+[global floor_z = -cavern_half_height]
+[global stage_max = array.create(6)]
+[global stage_crown = array.create(6)]
+[global stage_left = array.create(6)]
+[global stage_right = array.create(6)]
+[global stage_wall_convergence = array.create(6)]
+[global stage_invert = array.create(6)]
+[global stage_probe_distance = array.create(6)]
+[global stage_plastic = array.create(6)]
+[global stage_support = array.create(6)]
+[global stage_ratio_average = array.create(6)]
+[global stage_ratio_maximum = array.create(6)]
+[global stage_ratio_local = array.create(6)]
+[global stage_ratio = array.create(6)]
+
+fish define rotated_stress
+    local angle = psi_deg * math.pi / 180.0
+    local cosine = math.cos(angle)
+    local sine = math.sin(angle)
+    global stress_xx = -(major_stress * cosine^2 + minor_stress * sine^2)
+    global stress_zz = -(major_stress * sine^2 + minor_stress * cosine^2)
+    global stress_xz = -(major_stress - minor_stress) * sine * cosine
+end
+[rotated_stress]
+
+zone import '__MESH_FILE__' use-given-ids
+zone validate
+
+; Preserve the permanent rock-core interface before excavation.
+zone face group 'CavernBoundary' internal ...
+    range group 'Rock' group 'Excavation'
+zone face skin slot-skin 'OuterBoundary'
+zone face group 'East' range position-x __DOMAIN_HALF_WIDTH_M__
+zone face group 'West' range position-x -__DOMAIN_HALF_WIDTH_M__
+zone face group 'Top' range position-z __DOMAIN_HALF_HEIGHT_M__
+zone face group 'Bottom' range position-z -__DOMAIN_HALF_HEIGHT_M__
+
+fish define audit_cavern_mesh
+    global minimum_zone_condition = 1.0
+    loop foreach local current_zone zone.list
+        minimum_zone_condition = math.min(minimum_zone_condition,zone.condition(current_zone,0))
+    endloop
+    io.out('ASRC_MESH minimum_zone_condition=' + string(minimum_zone_condition) + ...
+           ' zones=' + string(zone.num) + ' gridpoints=' + string(gp.num))
+end
+[audit_cavern_mesh]
+
+__MATERIAL_BLOCK__
+
+; Plane strain along the cavern axis.
+zone gridpoint fix velocity-y range position-y 0.0
+zone gridpoint fix velocity-y range position-y __PLANE_STRAIN_THICKNESS_M__
+
+zone initialize stress xx [stress_xx] yy [stress_zz] ...
+                       zz [stress_zz] xz [stress_xz]
+zone face apply stress-xx [stress_xx] ...
+                range group 'East' or 'West' or 'Top' or 'Bottom'
+zone face apply stress-zz [stress_zz] ...
+                range group 'East' or 'West' or 'Top' or 'Bottom'
+zone face apply stress-xz [stress_xz] ...
+                range group 'East' or 'West' or 'Top' or 'Bottom'
+model solve ratio-__CONVERGENCE_METRIC__ __CONVERGENCE_LIMIT__ cycles __INITIAL_CYCLES__
+model save '__CASE_ID___initial'
+zone gridpoint initialize displacement (0,0,0)
+
+fish define measure_cavern_response(stage_index)
+    local max_displacement = 0.0
+    local crown_displacement = 0.0
+    local left_displacement = 0.0
+    local right_displacement = 0.0
+    local invert_displacement = 0.0
+    local crown_distance = 1.0e30
+    local left_distance = 1.0e30
+    local right_distance = 1.0e30
+    local invert_distance = 1.0e30
+    local yielded_zones = 0
+    local shell_elements = 0
+    local boundary_tolerance = 1.0e-5
+    local current_floor = floor_z
+    if stage_index = 1 then
+        current_floor = 29.5666666667
+    else if stage_index = 2 then
+        current_floor = 14.7833333333
+    else if stage_index = 3 then
+        current_floor = 0.0
+    else if stage_index = 4 then
+        current_floor = -14.7833333333
+    else if stage_index = 5 then
+        current_floor = -29.5666666667
+    endif
+    loop foreach local point gp.list
+        local x_position = gp.pos.x(point)
+        local z_position = gp.pos.z(point)
+        local on_boundary = false
+        if z_position <= springline_z then
+            if z_position >= current_floor then
+                if math.abs(math.abs(x_position) - cavern_half_width) <= boundary_tolerance then
+                    on_boundary = true
+                endif
+            endif
+            if math.abs(z_position - current_floor) <= boundary_tolerance then
+                if math.abs(x_position) <= cavern_half_width + boundary_tolerance then
+                    on_boundary = true
+                endif
+            endif
+        else
+            local arch_distance = math.sqrt(x_position^2 + (z_position - springline_z)^2)
+            if math.abs(arch_distance - arch_radius) <= boundary_tolerance then
+                on_boundary = true
+            endif
+        endif
+        if on_boundary then
+            local displacement = math.sqrt(gp.disp.x(point)^2 + gp.disp.z(point)^2)
+            max_displacement = math.max(max_displacement,displacement)
+        endif
+
+        local distance = math.sqrt(x_position^2 + (z_position - cavern_half_height)^2)
+        if distance < crown_distance then
+            crown_distance = distance
+            crown_displacement = math.abs(gp.disp.z(point))
+        endif
+        if stage_index >= 3 then
+            distance = math.sqrt((x_position + cavern_half_width)^2 + z_position^2)
+            if distance < left_distance then
+                left_distance = distance
+                left_displacement = math.abs(gp.disp.x(point))
+            endif
+            distance = math.sqrt((x_position - cavern_half_width)^2 + z_position^2)
+            if distance < right_distance then
+                right_distance = distance
+                right_displacement = math.abs(gp.disp.x(point))
+            endif
+        endif
+        if stage_index >= 6 then
+            distance = math.sqrt(x_position^2 + (z_position - floor_z)^2)
+            if distance < invert_distance then
+                invert_distance = distance
+                invert_displacement = math.abs(gp.disp.z(point))
+            endif
+        endif
+    endloop
+    loop foreach local current_zone zone.list
+        if zone.model(current_zone) # 'null' then
+            if zone.state(current_zone) # 0 then
+                yielded_zones += 1
+            endif
+        endif
+    endloop
+    local probe_distance = crown_distance
+    if stage_index >= 3 then
+        probe_distance = math.max(probe_distance,math.max(left_distance,right_distance))
+    endif
+    if stage_index >= 6 then
+        probe_distance = math.max(probe_distance,invert_distance)
+    endif
+    shell_elements = struct.num
+    stage_max(stage_index) = max_displacement
+    stage_crown(stage_index) = crown_displacement
+    stage_left(stage_index) = left_displacement
+    stage_right(stage_index) = right_displacement
+    stage_wall_convergence(stage_index) = left_displacement + right_displacement
+    stage_invert(stage_index) = invert_displacement
+    stage_probe_distance(stage_index) = probe_distance
+    stage_plastic(stage_index) = yielded_zones
+    stage_support(stage_index) = shell_elements
+    stage_ratio_average(stage_index) = zone.mech.ratio.avg
+    stage_ratio_maximum(stage_index) = zone.mech.ratio.max
+    stage_ratio_local(stage_index) = zone.mech.ratio.local
+    stage_ratio(stage_index) = __CONVERGENCE_RATIO_FISH__
+    io.out('ASRC_STAGE case=__CASE_ID__ stage=' + string(stage_index) + ...
+           ' max_disp=' + string(max_displacement) + ...
+           ' wall_convergence=' + string(stage_wall_convergence(stage_index)) + ...
+           ' probe_distance=' + string(probe_distance) + ...
+           ' support=' + string(shell_elements) + ...
+           ' ratio_selected=' + string(stage_ratio(stage_index)) + ...
+           ' ratio_maximum=' + string(stage_ratio_maximum(stage_index)) + ...
+           ' ratio_local=' + string(stage_ratio_local(stage_index)))
+end
+
+fish define write_cavern_progress(stage_index)
+    local output = array.create(7)
+    output(1) = 'case_id,scenario_id,beta_deg,psi_deg,stress_ratio,model,mesh,circumferential_zones,radial_zones,stage,response_max_m,response_crown_m,response_left_wall_m,response_right_wall_m,response_wall_convergence_m,response_invert_m,probe_max_distance_m,plastic_zone_count,support_element_count,ratio_average,ratio_maximum,ratio_local,ratio_selected,convergence_metric'
+    if stage_index >= 1 then
+        output(2) = '__CASE_ID__,__SCENARIO_ID__,' + string(beta_deg) + ',' + string(psi_deg) + ',' + string(stress_ratio) + ',__MODEL_NAME__,__MESH_NAME__,__CIRCUMFERENTIAL_ZONES__,__RADIAL_ZONES__,1,' + string(stage_max(1)) + ',' + string(stage_crown(1)) + ',' + string(stage_left(1)) + ',' + string(stage_right(1)) + ',' + string(stage_wall_convergence(1)) + ',' + string(stage_invert(1)) + ',' + string(stage_probe_distance(1)) + ',' + string(stage_plastic(1)) + ',' + string(stage_support(1)) + ',' + string(stage_ratio_average(1)) + ',' + string(stage_ratio_maximum(1)) + ',' + string(stage_ratio_local(1)) + ',' + string(stage_ratio(1)) + ',__CONVERGENCE_METRIC__'
+    endif
+    if stage_index >= 2 then
+        output(3) = '__CASE_ID__,__SCENARIO_ID__,' + string(beta_deg) + ',' + string(psi_deg) + ',' + string(stress_ratio) + ',__MODEL_NAME__,__MESH_NAME__,__CIRCUMFERENTIAL_ZONES__,__RADIAL_ZONES__,2,' + string(stage_max(2)) + ',' + string(stage_crown(2)) + ',' + string(stage_left(2)) + ',' + string(stage_right(2)) + ',' + string(stage_wall_convergence(2)) + ',' + string(stage_invert(2)) + ',' + string(stage_probe_distance(2)) + ',' + string(stage_plastic(2)) + ',' + string(stage_support(2)) + ',' + string(stage_ratio_average(2)) + ',' + string(stage_ratio_maximum(2)) + ',' + string(stage_ratio_local(2)) + ',' + string(stage_ratio(2)) + ',__CONVERGENCE_METRIC__'
+    endif
+    if stage_index >= 3 then
+        output(4) = '__CASE_ID__,__SCENARIO_ID__,' + string(beta_deg) + ',' + string(psi_deg) + ',' + string(stress_ratio) + ',__MODEL_NAME__,__MESH_NAME__,__CIRCUMFERENTIAL_ZONES__,__RADIAL_ZONES__,3,' + string(stage_max(3)) + ',' + string(stage_crown(3)) + ',' + string(stage_left(3)) + ',' + string(stage_right(3)) + ',' + string(stage_wall_convergence(3)) + ',' + string(stage_invert(3)) + ',' + string(stage_probe_distance(3)) + ',' + string(stage_plastic(3)) + ',' + string(stage_support(3)) + ',' + string(stage_ratio_average(3)) + ',' + string(stage_ratio_maximum(3)) + ',' + string(stage_ratio_local(3)) + ',' + string(stage_ratio(3)) + ',__CONVERGENCE_METRIC__'
+    endif
+    if stage_index >= 4 then
+        output(5) = '__CASE_ID__,__SCENARIO_ID__,' + string(beta_deg) + ',' + string(psi_deg) + ',' + string(stress_ratio) + ',__MODEL_NAME__,__MESH_NAME__,__CIRCUMFERENTIAL_ZONES__,__RADIAL_ZONES__,4,' + string(stage_max(4)) + ',' + string(stage_crown(4)) + ',' + string(stage_left(4)) + ',' + string(stage_right(4)) + ',' + string(stage_wall_convergence(4)) + ',' + string(stage_invert(4)) + ',' + string(stage_probe_distance(4)) + ',' + string(stage_plastic(4)) + ',' + string(stage_support(4)) + ',' + string(stage_ratio_average(4)) + ',' + string(stage_ratio_maximum(4)) + ',' + string(stage_ratio_local(4)) + ',' + string(stage_ratio(4)) + ',__CONVERGENCE_METRIC__'
+    endif
+    if stage_index >= 5 then
+        output(6) = '__CASE_ID__,__SCENARIO_ID__,' + string(beta_deg) + ',' + string(psi_deg) + ',' + string(stress_ratio) + ',__MODEL_NAME__,__MESH_NAME__,__CIRCUMFERENTIAL_ZONES__,__RADIAL_ZONES__,5,' + string(stage_max(5)) + ',' + string(stage_crown(5)) + ',' + string(stage_left(5)) + ',' + string(stage_right(5)) + ',' + string(stage_wall_convergence(5)) + ',' + string(stage_invert(5)) + ',' + string(stage_probe_distance(5)) + ',' + string(stage_plastic(5)) + ',' + string(stage_support(5)) + ',' + string(stage_ratio_average(5)) + ',' + string(stage_ratio_maximum(5)) + ',' + string(stage_ratio_local(5)) + ',' + string(stage_ratio(5)) + ',__CONVERGENCE_METRIC__'
+    endif
+    if stage_index >= 6 then
+        output(7) = '__CASE_ID__,__SCENARIO_ID__,' + string(beta_deg) + ',' + string(psi_deg) + ',' + string(stress_ratio) + ',__MODEL_NAME__,__MESH_NAME__,__CIRCUMFERENTIAL_ZONES__,__RADIAL_ZONES__,6,' + string(stage_max(6)) + ',' + string(stage_crown(6)) + ',' + string(stage_left(6)) + ',' + string(stage_right(6)) + ',' + string(stage_wall_convergence(6)) + ',' + string(stage_invert(6)) + ',' + string(stage_probe_distance(6)) + ',' + string(stage_plastic(6)) + ',' + string(stage_support(6)) + ',' + string(stage_ratio_average(6)) + ',' + string(stage_ratio_maximum(6)) + ',' + string(stage_ratio_local(6)) + ',' + string(stage_ratio(6)) + ',__CONVERGENCE_METRIC__'
+    endif
+    local status = file.open('cavern_case_result.csv',1,1)
+    status = file.write(output,stage_index + 1)
+    status = file.close
+    output = array.delete(output)
+end
+
+__STAGE_COMMANDS__
+
+io.out('ASRC_RESULT case=__CASE_ID__ stages=6 max_disp=' + string(stage_max(6)) + ...
+       ' ratio_selected=' + string(stage_ratio(6)) + ...
+       ' ratio_local=' + string(stage_ratio_local(6)))
+model save '__CASE_ID___final'
+program return

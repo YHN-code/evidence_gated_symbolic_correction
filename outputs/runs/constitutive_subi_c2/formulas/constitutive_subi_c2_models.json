@@ -1,0 +1,108 @@
+{
+  "reference": {
+    "family": "exponential",
+    "coefficients": [
+      0.35,
+      1.15,
+      0.00035
+    ],
+    "complexity": 3,
+    "formula": "c(kappa) = 0.35 + 1.15 exp(-kappa/0.00035)",
+    "peak_cohesion_mpa": 1.5,
+    "residual_cohesion_mpa": 0.35,
+    "softening_scale": 0.00035
+  },
+  "selected_constitutive_c2_asrc": {
+    "family": "exponential",
+    "coefficients": [
+      0.35000000000000003,
+      1.15,
+      0.00034999999999999994
+    ],
+    "complexity": 3,
+    "formula": "c(kappa) = 0.35 + 1.15 exp(-kappa/0.00035)",
+    "peak_cohesion_mpa": 1.5,
+    "residual_cohesion_mpa": 0.35000000000000003,
+    "softening_scale": 0.00034999999999999994
+  },
+  "generic_state_polynomial": {
+    "family": "polynomial",
+    "coefficients": [
+      1.1494990458547465,
+      -905.5886340914503,
+      228182.83033910187
+    ],
+    "complexity": 3,
+    "formula": "c(kappa) = 1.149499 + -905.58863 kappa + 228182.83 kappa^2",
+    "peak_cohesion_mpa": 1.1494990458547465,
+    "residual_cohesion_mpa": NaN,
+    "softening_scale": null
+  },
+  "bounded_candidates": [
+    {
+      "family": "exponential",
+      "formula": "c(kappa) = 0.35 + 1.15 exp(-kappa/0.00035)",
+      "complexity": 3,
+      "calibration_rmse_mpa": 1.0666541440078269e-15,
+      "group_cv_rmse_mpa": 8.91739131319468e-16,
+      "physical_violation_count": 0,
+      "score": 0.0003000000000008918,
+      "selected": true
+    },
+    {
+      "family": "rational",
+      "formula": "c(kappa) = 0.18223406 + 1.3828701/(1 + kappa/0.00024299131)",
+      "complexity": 3,
+      "calibration_rmse_mpa": 0.014914054407397624,
+      "group_cv_rmse_mpa": 0.01530858860628769,
+      "physical_violation_count": 0,
+      "score": 0.01560858860628769,
+      "selected": false
+    },
+    {
+      "family": "bilinear",
+      "formula": "c(kappa) = 0.38949901 + 0.97273731 max(1 - kappa/0.00066247555, 0)",
+      "complexity": 3,
+      "calibration_rmse_mpa": 0.025125535208249596,
+      "group_cv_rmse_mpa": 0.02506620141586639,
+      "physical_violation_count": 0,
+      "score": 0.02536620141586639,
+      "selected": false
+    },
+    {
+      "family": "linear_clipped",
+      "formula": "c(kappa) = max(0.38949901, 1.3622363 - 1468.3369 kappa)",
+      "complexity": 3,
+      "calibration_rmse_mpa": 0.02512553520844254,
+      "group_cv_rmse_mpa": 0.025066201416013355,
+      "physical_violation_count": 0,
+      "score": 0.025366201416013357,
+      "selected": false
+    },
+    {
+      "family": "constant",
+      "formula": "c(kappa) = 0.54366432",
+      "complexity": 1,
+      "calibration_rmse_mpa": 0.12453284188657542,
+      "group_cv_rmse_mpa": 0.12483396226543449,
+      "physical_violation_count": 0,
+      "score": 0.12493396226543449,
+      "selected": false
+    }
+  ],
+  "agent_interface": {
+    "available_actions": [
+      "inspect_softening_state",
+      "compare_evolution_family",
+      "test_unseen_path",
+      "challenge_monotonicity",
+      "accept_current_best"
+    ],
+    "knowledge_topics": [
+      "weak_plane",
+      "strain_softening",
+      "plastic_dissipation",
+      "path_dependent_validation"
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+case_name: dinh_brazilian
+data_type: strength_surface
+prior_level: mechanics_informed
+input_file: data/anisotropic_rock_literature_data_package/3_Dinh2011_巴西劈裂试验/data/processed/Dinh2011_experiment_vs_numerical_residuals_LeGs_MySc.csv
+
+filters:
+  rock:
+    - Le.Gs
+    - My.Sc
+
+columns:
+  x:
+    - beta_deg
+    - psi_deg
+  y_true: experimental_mean_MPa
+  y_base: numerical_sxx_cen_MPa
+  residual: residual_exp_minus_numerical_MPa
+  group: rock
+
+feature_set: beta_psi_weak_plane
+
+features:
+  include:
+    - m_beta
+    - m2_beta
+    - m4_beta
+    - sin2_beta
+    - cos2_beta
+    - m_psi
+    - m2_psi
+    - m4_psi
+    - sin2_psi
+    - cos2_psi
+    - m_beta_m_psi
+    - m2_beta_m2_psi
+  forbid:
+    - tan_beta
+    - reciprocal_sin_beta
+    - reciprocal_cos_beta
+
+constraints:
+  positive_corrected_strength: true
+  bounded_endpoints: true
+  max_formula_complexity: 8
+
+validation:
+  strategies:
+    - leave_one_beta
+    - leave_one_psi
+
+symbolic:
+  alpha_grid: [0.0, 0.001, 0.01, 0.1, 1.0]
+  max_terms:
+    rule_based: 2
+    generic: 3
+    asrc: 3
+    knowledge_asrc: 4
+    llm_max: 4

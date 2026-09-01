@@ -1,0 +1,11 @@
+
+cff-version: 1.2.0
+message: "If you use this software, please cite the associated paper."
+title: "Evidence-gated symbolic correction of geomechanical models under structural ambiguity"
+type: software
+authors:
+  - family-names: Yan
+    given-names: Hengnian
+repository-code: "https://github.com/YHN-code/evidence_gated_symbolic_correction"
+version: 0.1.0
+date-released: 2026-09-01

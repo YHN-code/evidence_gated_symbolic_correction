@@ -1,0 +1,29 @@
+{
+  "status": "passed",
+  "checks": {
+    "all_stages_converged": true,
+    "softening_signal_is_resolved": true,
+    "discovered_law_improves_baseline": true,
+    "plasticity_is_activated": true
+  },
+  "oracle_baseline_signal_fraction": 0.013259068498430383,
+  "discovered_response_improvement_fraction": 0.6899316550002788,
+  "maximum_plastic_zone_count_by_model": {
+    "softening_baseline_linear": 381,
+    "softening_discovered_exponential": 390,
+    "softening_oracle_exponential": 390
+  },
+  "minimum_plastic_zone_count": 1,
+  "response_metrics_admissible": true,
+  "scientific_scope": "The cavern calculation propagates a frozen controlled softening revision to staged engineering responses. It is not field calibration and does not provide additional discovery evidence.",
+  "stage": "discovered_law_confirmation",
+  "selected_stress_mpa": 6.0,
+  "source_pair_run_id": "structural_softening_cavern_pair_v3",
+  "pair_dataset": "flac3d\\runs\\structural_softening_cavern_pair_v3\\flac3d_cavern_pilot_results.csv",
+  "discovered_dataset": "flac3d\\runs\\structural_softening_cavern_confirmation_v3\\flac3d_cavern_pilot_results.csv",
+  "protocol_fingerprint": {
+    "config_sha256": "94491c1bde6cb091bede04090e32d3075a530da24a9cc17d4e7e6853633c4466",
+    "mesh_sha256": "48edef56aba9cff191a517886858131a1a393e618f50e8e2d48240856152687f",
+    "frozen_artifact_sha256": "c158ee4e1ab8a2933a39027ec3666e5672a8ac7bb955cf3147650fe2ad720dd9"
+  }
+}

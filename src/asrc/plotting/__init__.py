@@ -1,0 +1,1 @@
+"""Paper plotting helpers."""

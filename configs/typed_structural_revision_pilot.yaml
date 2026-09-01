@@ -1,0 +1,36 @@
+protocol:
+  name: typed_structural_revision_pilot
+  version: 1.0-development
+  status: development_only
+  purpose: >-
+    Test whether joint search over edit location, edit type, and expression family
+    can recover local constitutive-model changes rather than only fit output discrepancy.
+
+data:
+  fit_size: 48
+  validation_size: 32
+  locked_size: 128
+
+evaluation:
+  diagnostic_weight: 1.0
+  complexity_penalty: 0.002
+  acceptance_noise_multiplier: 1.75
+  optimizer_restarts: 5
+  optimizer_max_nfev: 2500
+
+pysr:
+  niterations: 80
+  populations: 6
+  population_size: 30
+  maxsize: 22
+  binary_operators: ["+", "-", "*", "/"]
+  unary_operators: ["sin", "cos", "tanh", "exp"]
+  progress: false
+  verbosity: 0
+
+confirmation_gate:
+  minimum_joint_structure_recovery_rate: 0.67
+  maximum_mean_locked_joint_normalized_rmse: 0.12
+  maximum_physical_violation_rate: 0.0
+  maximum_uncovered_acceptance_rate: 0.0
+  require_improvement_over_output_discrepancy: true

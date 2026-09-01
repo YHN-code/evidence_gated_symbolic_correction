@@ -1,0 +1,71 @@
+version: semantic_transfer_knowledge_v1.0.0
+description: >-
+  Literature-traceable qualitative knowledge for unseen-mechanism transfer.
+  Prompt views exclude citations, equations, candidate terms, operators,
+  fitted constants, task identifiers, and case-routing instructions.
+
+knowledge_blocks:
+  - id: TK-CREEP-001
+    topics: [creep, viscoelasticity, time_dependence]
+    statement: >-
+      Sustained loading can produce an instantaneous deformation followed by
+      time-dependent creep. Candidate corrections should distinguish delayed
+      response from an instantaneous offset and should be checked for finite,
+      causal evolution throughout the declared time and stress ranges.
+    scope: >-
+      Qualitative time-response and admissibility guidance below creep rupture;
+      it does not prescribe a rheological element or creep equation.
+    evidence:
+      sources:
+        - https://doi.org/10.1016/S0148-9062(98)00187-9
+      locator: Experimental transient and steady creep response under sustained loading.
+      evidence_level: peer_reviewed_experiments
+
+  - id: TK-PERMEABILITY-001
+    topics: [permeability, effective_stress, crack_closure]
+    statement: >-
+      Increasing effective stress can close compliant pores or cracks and
+      substantially reduce permeability even when bulk porosity changes are
+      small. A proposed response must remain positive and should be tested over
+      the full effective-stress interval rather than extrapolated linearly.
+    scope: >-
+      Qualitative stress sensitivity and positivity guidance for low-permeability
+      rock; it does not prescribe an exponential or power-law relation.
+    evidence:
+      sources:
+        - https://doi.org/10.1016/j.ijrmms.2015.04.025
+      locator: Laboratory-supported permeability and effective-stress relationships.
+      evidence_level: peer_reviewed_experiments_and_mechanistic_analysis
+
+  - id: TK-CYCLIC-001
+    topics: [cyclic_loading, damage_accumulation, loading_amplitude]
+    statement: >-
+      Repeated loading can accumulate irreversible deformation and damage, and
+      the observed evolution depends on loading amplitude as well as cycle
+      history. Candidate corrections should be checked for causal accumulation,
+      finite response, and consistency across both variables before rupture.
+    scope: >-
+      Qualitative cyclic-evolution guidance; it does not prescribe a fatigue
+      damage curve, threshold, saturation law, or exponent.
+    evidence:
+      sources:
+        - https://doi.org/10.1155/2018/7845143
+      locator: Experimental modulus and damage evolution during sandstone cyclic loading.
+      evidence_level: peer_reviewed_experiments
+
+  - id: TK-THERMAL-001
+    topics: [thermal_damage, thermomechanical_coupling, stiffness]
+    statement: >-
+      Thermal exposure can create microstructural damage and reduce rock
+      stiffness, while mechanical confinement can modify the measured response.
+      Candidate corrections should remain positive and bounded and should be
+      assessed jointly over temperature and confinement rather than along one
+      loading line.
+    scope: >-
+      Qualitative thermo-mechanical interaction and validation guidance; it does
+      not prescribe a damage law, coupling term, or failure criterion.
+    evidence:
+      sources:
+        - https://doi.org/10.1038/s41598-024-65752-4
+      locator: Experimental thermal damage and elastic-modulus evolution in granite.
+      evidence_level: peer_reviewed_experiments

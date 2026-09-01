@@ -1,0 +1,159 @@
+{
+  "task_id": "SR03",
+  "status": "accepted",
+  "rounds": [
+    {
+      "round_index": 0,
+      "validation_observations": 32,
+      "selected_location": "cohesion",
+      "selected_edit_type": "replace_component",
+      "selected_family_id": "exponential_decay",
+      "selected_validation_score": 0.08622336764501556,
+      "selected_locked_joint_rmse": 0.0029093923799220016,
+      "selected_adequacy_accepted": true,
+      "statistical_adequacy_probability": 0.521904029072586,
+      "statistical_adequacy_accepted": true,
+      "equivalence_member_count": 2,
+      "structure_signature_count": 2,
+      "equation_signature_count": 2,
+      "status_before_acquisition": "unresolved_ambiguity",
+      "acquisition": {
+        "round_index": 1,
+        "selected_pool_indices": [
+          228,
+          121,
+          157,
+          132,
+          16,
+          219,
+          114,
+          143
+        ],
+        "maximum_disagreement": 0.08420689016952076,
+        "mean_selected_disagreement": 0.07503638702051203,
+        "design_records": [
+          {
+            "damage": 0.9971046370319046,
+            "pressure": 0.03701008430097589
+          },
+          {
+            "damage": 0.993185259422783,
+            "pressure": 1.1848210180525827
+          },
+          {
+            "damage": 0.9762247797414406,
+            "pressure": 0.6222151911086077
+          },
+          {
+            "damage": 0.9912018511898276,
+            "pressure": 0.2816657177108011
+          },
+          {
+            "damage": 0.9840569117782604,
+            "pressure": 0.9642266747356523
+          },
+          {
+            "damage": 0.9628921642496043,
+            "pressure": 0.472044460566257
+          },
+          {
+            "damage": 0.965100202499818,
+            "pressure": 0.12345527870176035
+          },
+          {
+            "damage": 0.9776647229982844,
+            "pressure": 1.123834437777945
+          }
+        ]
+      }
+    },
+    {
+      "round_index": 1,
+      "validation_observations": 40,
+      "selected_location": "cohesion",
+      "selected_edit_type": "replace_component",
+      "selected_family_id": "exponential_decay",
+      "selected_validation_score": 0.08592706889817127,
+      "selected_locked_joint_rmse": 0.0029093919597496746,
+      "selected_adequacy_accepted": true,
+      "statistical_adequacy_probability": 0.5273594554741605,
+      "statistical_adequacy_accepted": true,
+      "equivalence_member_count": 1,
+      "structure_signature_count": 1,
+      "equation_signature_count": 1,
+      "status_before_acquisition": "accepted",
+      "acquisition": null
+    }
+  ],
+  "final_method_result": {
+    "task_id": "SR03",
+    "mechanism": "nonlinear cohesion softening",
+    "method": "ambiguity_gated_structural_revision",
+    "candidate_count": 78,
+    "wall_time_seconds": 3.2931251000845805,
+    "selected_proposal_id": "edit_511fa35867",
+    "selected_location": "cohesion",
+    "selected_edit_type": "replace_component",
+    "selected_family_id": "exponential_decay",
+    "selected_expression": "(a0 * exp(-((a1 * damage))))",
+    "complexity": 9,
+    "validation_primary_rmse": 0.040615176210485236,
+    "validation_diagnostic_rmse": 0.038592082781027374,
+    "locked_primary_rmse": 0.0033007760858648136,
+    "locked_diagnostic_rmse": 0.006271474563143168,
+    "baseline_locked_primary_rmse": 0.5081870938110956,
+    "baseline_locked_diagnostic_rmse": 0.9655554782410816,
+    "locked_primary_improvement_fraction": 0.9935048014283264,
+    "locked_joint_normalized_rmse": 0.0029093919597496746,
+    "location_recovered": true,
+    "edit_type_recovered": true,
+    "joint_structure_recovered": true,
+    "family_recovered": true,
+    "physical_violations": 0,
+    "adequacy_accepted": true,
+    "expected_library_coverage": true,
+    "parameter_values": {
+      "a0": 3.9957536779973744,
+      "a1": 2.1919009047951126
+    }
+  },
+  "final_ambiguity": {
+    "selected_proposal_id": "edit_511fa35867",
+    "members": [
+      {
+        "proposal_id": "edit_511fa35867",
+        "location": "cohesion",
+        "edit_type": "replace_component",
+        "family_id": "exponential_decay",
+        "mean_paired_loss_difference": 0.0,
+        "standard_error": 0.0,
+        "equivalence_limit": 0.0,
+        "selection_score": 0.08592706889817127
+      }
+    ],
+    "structure_signatures": [
+      [
+        "cohesion",
+        "replace_component"
+      ]
+    ],
+    "equation_signatures": [
+      [
+        "cohesion",
+        "replace_component",
+        "exponential_decay"
+      ]
+    ],
+    "structurally_ambiguous": false,
+    "equation_ambiguous": false
+  },
+  "final_adequacy": {
+    "proposal_id": "edit_511fa35867",
+    "normalized_residual_sum_squares": 78.47353479966088,
+    "degrees_of_freedom": 80,
+    "survival_probability": 0.5273594554741605,
+    "significance_level": 0.01,
+    "accepted": true
+  },
+  "acquired_observations": 8
+}

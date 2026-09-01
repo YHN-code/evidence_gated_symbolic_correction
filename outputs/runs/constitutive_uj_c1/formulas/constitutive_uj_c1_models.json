@@ -1,0 +1,83 @@
+{
+  "reference": {
+    "family": "normal_linear",
+    "cohesion_mpa": 1.2,
+    "friction_deg": 28.0,
+    "formula": "tau_y = c - sigma_n tan(phi)"
+  },
+  "selected_constitutive_asrc": {
+    "family": "normal_linear",
+    "coefficients": [
+      1.2000000000000048,
+      0.5317094316614788
+    ],
+    "complexity": 2,
+    "formula": "tau_y = 1.2 - 0.53170943 sigma_n",
+    "recovered_cohesion_mpa": 1.2000000000000048,
+    "recovered_friction_deg": 28.0
+  },
+  "generic_constitutive_fit": {
+    "family": "generic_polynomial",
+    "coefficients": [
+      1.199999999999983,
+      0.5317094316614805,
+      -1.1102230246251565e-16,
+      9.582178800426888e-16,
+      8.673617379884035e-18
+    ],
+    "complexity": 5,
+    "formula": "tau_y = 1.2 + 0.53170943 p_n + -1.110223e-16 p_n^2 + 9.5821788e-16 m_beta + 8.6736174e-18 p_n m_beta"
+  },
+  "bounded_candidates": [
+    {
+      "family": "normal_linear",
+      "formula": "tau_y = 1.2 - 0.53170943 sigma_n",
+      "complexity": 2,
+      "calibration_rmse_mpa": 1.0723188945955871e-15,
+      "group_cv_rmse_mpa": 6.994987580412043e-16,
+      "physical_violation_count": 0,
+      "score": 0.0002000000000006995,
+      "selected": true
+    },
+    {
+      "family": "normal_quadratic",
+      "formula": "tau_y = 1.200002 + 0.53170908 p_n + 1.2922706e-08 p_n^2",
+      "complexity": 3,
+      "calibration_rmse_mpa": 9.107603292974942e-08,
+      "group_cv_rmse_mpa": 5.582467870352843e-08,
+      "physical_violation_count": 0,
+      "score": 0.00030005582467870355,
+      "selected": false
+    },
+    {
+      "family": "global_pressure_linear",
+      "formula": "tau_y = 3.7058757 + 0.39504789 p_mean",
+      "complexity": 2,
+      "calibration_rmse_mpa": 0.5118226039248183,
+      "group_cv_rmse_mpa": 0.5489651013238259,
+      "physical_violation_count": 0,
+      "score": 0.5491651013238259,
+      "selected": false
+    },
+    {
+      "family": "orientation_linear",
+      "formula": "tau_y = 6.7452368 + 12.75781 |sin(beta) cos(beta)|",
+      "complexity": 2,
+      "calibration_rmse_mpa": 0.6928678724040278,
+      "group_cv_rmse_mpa": 0.6494329889932656,
+      "physical_violation_count": 0,
+      "score": 0.6496329889932656,
+      "selected": false
+    },
+    {
+      "family": "constant",
+      "formula": "tau_y = 8.029677",
+      "complexity": 1,
+      "calibration_rmse_mpa": 0.8539135643131216,
+      "group_cv_rmse_mpa": 0.8352300123985467,
+      "physical_violation_count": 0,
+      "score": 0.8353300123985467,
+      "selected": false
+    }
+  ]
+}

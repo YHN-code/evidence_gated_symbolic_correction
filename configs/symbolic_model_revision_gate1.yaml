@@ -1,0 +1,60 @@
+protocol:
+  name: symbolic_model_revision_gate1a
+  version: 1.1.0
+  status: development_pilot
+
+sampling:
+  observed_count: 96
+  locked_count: 128
+  audit_count: 128
+  fit_fraction: 0.70
+
+candidate_budget:
+  maximum_unique_candidates: 24
+
+evaluation:
+  parameter_lower_bound: -8.0
+  parameter_upper_bound: 8.0
+  multistart_count: 4
+  maximum_function_evaluations: 500
+  complexity_penalty_fraction: 0.001
+  supported_relative_validation_gap: 0.05
+  recovery_noise_multiplier: 3.0
+
+llm:
+  candidates_per_call: 8
+  maximum_generation_calls: 3
+  transport_retry_attempts: 2
+  transport_retry_wait_seconds: 20
+  reasoning_effort_override: high
+  max_tokens_override: 12000
+
+stability:
+  task_ids: [T04, T06]
+  replicates: 3
+  required_recovery_fraction: 0.666666
+  minimum_valid_candidate_fraction: 0.80
+
+feedback_comparison:
+  development_revision: baseline_incumbent_v2
+  control_run_id: gate1a_lt_stability_v1
+  task_ids: [T04, T06]
+  replicates: 3
+  rounds: 3
+  candidates_per_round: 8
+  top_k_feedback: 3
+  workers: 3
+  incumbent_policy: baseline_or_best_fit_score
+  final_selection_allow_no_change: true
+  minimum_valid_candidate_fraction: 0.80
+  require_strict_aggregate_recovery_gain: true
+
+pysr:
+  niterations: 40
+  populations: 4
+  population_size: 24
+  maxsize: 20
+  binary_operators: ["+", "-", "*", "/"]
+  unary_operators: ["sin", "cos", "tanh", "exp"]
+  progress: false
+  verbosity: 0

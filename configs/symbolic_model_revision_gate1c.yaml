@@ -1,0 +1,63 @@
+protocol:
+  name: symbolic_model_revision_gate1c_joint_information_design
+  version: 0.1.0
+  status: development_pilot
+
+gate1_config: configs/symbolic_model_revision_gate1.yaml
+data_seed: 20260817
+
+candidate_archive:
+  control_run_id: gate1a_lt_stability_v1
+  feedback_run_id: gate1a_fit_feedback_incumbent_v2
+  source_data_seed: 20260806
+  arms: [independent_resampling, fit_feedback]
+  task_ids: [T04, T06]
+  maximum_structures_per_task: 8
+  ranking_criterion: observed_validation_selection_score
+  allow_new_llm_calls: false
+
+design:
+  initial_observation_count: 12
+  acquisition_pool_count: 192
+  maximum_new_observations: 8
+  outer_shell_only: true
+  repetitions: 12
+  strategies:
+    - space_filling_design
+    - random_design
+    - model_information_gain
+    - parameter_information_gain
+    - joint_structure_parameter_information_gain
+
+model_evidence:
+  weight_criterion: bayesian_information_criterion
+  bic_complexity: fitted_parameter_count
+  retain_baseline_null_model: true
+
+joint_information:
+  decomposition: chain_rule_model_identity_plus_conditional_parameters
+  model_information_estimator: gauss_hermite_scalar_gaussian
+  quadrature_order: 32
+  parameter_posterior: local_gaussian_laplace
+  parameter_prior: uniform_variance_from_fit_bounds
+
+random_design:
+  seed_offset: 93000
+
+evaluation:
+  recovery_noise_multiplier: 3.0
+  primary_budget: 8
+  report_budgets: [0, 1, 2, 4, 8]
+
+study:
+  development_only: true
+  primary_success_contract: >-
+    At the frozen primary budget, joint structure-parameter information must
+    reduce mean locked RMSE relative to both random design and model-only
+    information gain without reducing the total behavior-recovery count.
+  secondary_comparator: parameter_information_gain
+  prohibited_adaptations:
+    - Regenerate candidate structures from the current response data.
+    - Expose acquisition-pool targets before a point is selected.
+    - Use validation or locked responses for fitting, weighting, acquisition, or stopping.
+    - Change budgets, repetitions, candidates, or success criteria after inspecting results.

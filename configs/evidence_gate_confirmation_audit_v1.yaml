@@ -1,0 +1,34 @@
+protocol:
+  name: frozen_confirmation_gate_and_coverage_audit
+  version: 1.0.0
+  status: post_confirmation_diagnostic
+  purpose: >-
+    Replay the frozen confirmation candidate pools to isolate the observation
+    savings from the ambiguity gate and to distinguish candidate-generation
+    failure from downstream selection failure.
+
+source:
+  run_id: semantic_evidence_guided_revision_confirmation_v1
+  config_path: configs/semantic_evidence_guided_revision_confirmation_v1.yaml
+  prohibit_candidate_regeneration: true
+  prohibit_locked_target_use_before_final_reporting: true
+
+gate_audit:
+  conditional_source_method: conditional_space_filling
+  unconditional_method: unconditional_space_filling
+  acquisition_strategy: space_filling_design
+  maximum_new_observations: 3
+
+coverage_audit:
+  method: oracle_available_predictive_disagreement
+  acquisition_strategy: predictive_disagreement
+  inject_reference_only_when_absent: true
+  report_as_algorithm_performance: false
+
+statistics:
+  bootstrap_replicates: 20000
+  bootstrap_seed: 20260903
+
+reporting:
+  locked_target_used_for_generation_fitting_acquisition_or_stopping: false
+  label_as_post_confirmation_diagnostic: true

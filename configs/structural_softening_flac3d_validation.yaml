@@ -1,0 +1,60 @@
+protocol:
+  id: frozen_structural_softening_flac3d_validation
+  version: "1.0"
+  status: controlled_application_validation
+  description: >-
+    Transfer the frozen SR03 structural revision to a path-dependent weak-plane
+    cohesion law and compare the linear baseline, discovered exponential law,
+    and controlled oracle in Python and FLAC3D single-zone updates.
+
+frozen_artifact: configs/frozen_sr03_structural_softening.yaml
+
+application:
+  peak_cohesion_mpa: 1.5
+  damage_scale_plastic_shear: 0.00035
+  oracle_rate: 2.2
+
+table:
+  maximum_damage: 12.0
+  point_count: 1201
+
+material:
+  elastic:
+    young_mpa: 20000.0
+    poisson: 0.24
+  intact_matrix:
+    cohesion_mpa: 100.0
+    friction_deg: 40.0
+    dilation_deg: 0.0
+    tension_mpa: 100.0
+  joint:
+    friction_deg: 20.0
+    dilation_deg: 0.0
+    tension_mpa: 1.0
+
+paths:
+  monotonic:
+    engineering_shear_increment: 0.0001
+    phases: [[70, 1]]
+  unload_reload:
+    engineering_shear_increment: 0.0001
+    phases: [[35, 1], [10, -1], [45, 1]]
+
+cases:
+  - {case_id: sr03_b000_p003_monotonic, beta_deg: 0.0, pressure_mpa: 3.0, path: monotonic}
+  - {case_id: sr03_b010_p006_reload, beta_deg: 10.0, pressure_mpa: 6.0, path: unload_reload}
+
+flac3d:
+  executable: flac3d700_console.exe
+  timeout_seconds: 600.0
+  startup_timeout_seconds: 120.0
+  dynamic_timestep: 0.000001
+  density_kg_m3: 2600.0
+
+acceptance:
+  minimum_discovered_curve_improvement_fraction: 0.95
+  minimum_discovered_response_improvement_fraction: 0.90
+  maximum_discovered_oracle_curve_rmse_mpa: 0.01
+  maximum_flac3d_stress_rmse_mpa: 0.0002
+  maximum_flac3d_cohesion_error_mpa: 0.001
+  maximum_flac3d_plastic_shear_error: 0.00000002

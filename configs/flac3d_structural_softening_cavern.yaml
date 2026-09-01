@@ -1,0 +1,103 @@
+study_id: frozen_structural_softening_hydropower_cavern
+protocol_version: 3
+status: controlled_engineering_propagation_not_field_validation
+
+solver:
+  executable: flac3d700_console.exe
+  timeout_seconds: 7200
+  execution: serial
+  initial_cycles: 30000
+  stage_cycles: 60000
+  max_case_attempts: 3
+  case_retry_delay_seconds: 5
+
+geometry:
+  cavern_width_m: 34.0
+  cavern_height_m: 88.7
+  domain_half_width_m: 100.0
+  domain_half_height_m: 120.0
+  plane_strain_thickness_m: 1.0
+  excavation_stages: 6
+
+mesh:
+  name: body_fitted_v3_ti_smoke
+  axial_zones: 1
+  circumferential_zones: 12
+  radial_zones: 24
+  radial_ratio: 1.0
+  core_horizontal_zones: 8
+  stage_vertical_zones: 2
+  radial_layers: 24
+  arch_zones: 6
+  crown_half_width_m: 2.0
+  radial_bias: 1.5
+  minimum_to_mean_area_ratio: 0.002
+
+support:
+  installation_delay_stages: 0
+  thickness_m: 0.20
+  young_Pa: 2.0e10
+  poisson: 0.20
+  density_kg_m3: 2400.0
+
+loading:
+  major_stress_MPa: 20.0
+
+# The placeholder model is replaced by the three frozen softening laws before
+# any FLAC3D case is rendered.
+matrix:
+  models: [reference]
+  scenarios:
+    - scenario_id: oblique_softening_propagation
+      beta_deg: 45.0
+      psi_deg: 30.0
+      stress_ratio: 0.65
+
+material:
+  bulk_Pa: 5.5555555556e9
+  shear_Pa: 2.7131782946e9
+  cohesion_Pa: 5.0e6
+  friction_deg: 40.0
+  dilation_deg: 1.0
+  tension_Pa: 3.0e6
+  joint_cohesion_Pa: 1.5e6
+  joint_friction_deg: 20.0
+  joint_dilation_deg: 0.0
+  joint_tension_Pa: 8.0e5
+
+response:
+  primary: multi_response_stage_history
+  exported_unit: m
+  convergence_metric: average
+  convergence_ratio_average: 1.0e-5
+  maximum_probe_distance_m: 1.0e-6
+
+structural_softening:
+  frozen_artifact: configs/frozen_sr03_structural_softening.yaml
+  application:
+    peak_cohesion_mpa: 1.5
+    damage_scale_plastic_shear: 0.00035
+    oracle_rate: 2.2
+  table:
+    maximum_damage: 12.0
+    point_count: 1201
+
+admission_gate:
+  baseline_model: softening_baseline_linear
+  reference_model: softening_oracle_exponential
+  require_all_stages_converged: true
+  require_complete_stage_pairing: false
+  require_monotonic_cumulative_response: false
+  require_non_decreasing_support_count: true
+
+application_gate:
+  minimum_oracle_baseline_signal_fraction: 0.01
+  minimum_discovered_response_improvement_fraction: 0.50
+  require_any_plastic_zone: true
+
+qualification_protocol:
+  version: "1.0-frozen-before-screen"
+  stress_candidates_mpa: [12.0, 15.0, 18.0]
+  selection_rule: highest_fully_converged_oracle_case_with_plasticity
+  minimum_plastic_zone_count: 1
+  minimum_pair_signal_fraction: 0.01

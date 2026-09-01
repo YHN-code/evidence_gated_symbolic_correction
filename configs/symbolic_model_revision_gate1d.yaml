@@ -1,0 +1,82 @@
+protocol:
+  name: symbolic_model_revision_gate1d_confirmation
+  version: 1.0.0
+  status: frozen_confirmation
+
+gate1_config: configs/symbolic_model_revision_gate1.yaml
+frozen_algorithm_source: configs/symbolic_model_revision_gate1c.yaml
+data_seeds: [20260831, 20260903, 20260907, 20260911, 20260917, 20260923, 20261001, 20261009]
+
+candidate_archives:
+  gate1c:
+    control_run_id: gate1a_lt_stability_v1
+    feedback_run_id: gate1a_fit_feedback_incumbent_v2
+    source_data_seed: 20260806
+    arms: [independent_resampling, fit_feedback]
+    task_ids: [T04, T06]
+    maximum_structures_per_task: 8
+    ranking_criterion: observed_validation_selection_score
+    allow_new_llm_calls: false
+  development_matrix:
+    source_run_id: gate1a_development_matrix_v2
+    source_data_seed: 20260806
+    source_method: union
+    task_ids: [T01, T02, T03, T05]
+    maximum_structures_per_task: 8
+    ranking_criterion: observed_validation_selection_score
+    allow_new_llm_calls: false
+
+design:
+  initial_observation_count: 12
+  acquisition_pool_count: 192
+  maximum_new_observations: 8
+  outer_shell_only: true
+  strategies:
+    - space_filling_design
+    - random_design
+    - model_information_gain
+    - parameter_information_gain
+    - joint_structure_parameter_information_gain
+
+model_evidence:
+  weight_criterion: bayesian_information_criterion
+  bic_complexity: fitted_parameter_count
+  retain_baseline_null_model: true
+
+joint_information:
+  decomposition: chain_rule_model_identity_plus_conditional_parameters
+  model_information_estimator: gauss_hermite_scalar_gaussian
+  quadrature_order: 32
+  parameter_posterior: local_gaussian_laplace
+  parameter_prior: uniform_variance_from_fit_bounds
+
+random_design:
+  seed_offset: 93000
+
+evaluation:
+  recovery_noise_multiplier: 3.0
+  primary_budget: 8
+  report_budgets: [0, 1, 2, 4, 8]
+  bootstrap_replicates: 20000
+  bootstrap_seed: 20261101
+
+confirmation:
+  treatment: joint_structure_parameter_information_gain
+  primary_endpoint: integrated_locked_rmse
+  final_endpoint: locked_rmse
+  primary_comparators: [random_design, model_information_gain]
+  required_mean_superiority: [random_design, model_information_gain, space_filling_design]
+  required_final_mean_superiority: [random_design, model_information_gain]
+  required_recovery_noninferiority: [random_design, model_information_gain, space_filling_design]
+  required_cluster_ci_superiority: [random_design, model_information_gain]
+  transfer_task_ids: [T01, T02, T03, T05]
+  required_transfer_mean_superiority: [random_design, model_information_gain]
+
+study:
+  confirmatory: true
+  llm_calls: 0
+  prohibited_adaptations:
+    - Regenerate or rerank candidate structures using confirmation responses.
+    - Expose acquisition-pool targets before selection.
+    - Change seeds, budgets, tasks, candidates, priors, or endpoints after inspecting results.
+    - Remove a task or seed because it weakens the aggregate result.

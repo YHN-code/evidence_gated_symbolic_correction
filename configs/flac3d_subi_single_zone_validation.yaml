@@ -1,0 +1,55 @@
+protocol:
+  id: flac3d_subi_single_zone_validation
+  version: "1.0"
+  description: >-
+    Validation of the frozen C2 cohesion-softening law against the FLAC3D 7
+    softening-ubiquitous model using a dense tabulated evolution law.
+
+flac3d:
+  executable: flac3d700_console.exe
+  timeout_seconds: 300.0
+  startup_timeout_seconds: 120.0
+  dynamic_timestep: 0.000001
+  density_kg_m3: 2600.0
+
+material:
+  elastic:
+    young_mpa: 20000.0
+    poisson: 0.24
+  intact_matrix:
+    cohesion_mpa: 100.0
+    friction_deg: 40.0
+    dilation_deg: 0.0
+    tension_mpa: 100.0
+  joint:
+    peak_cohesion_mpa: 1.5
+    residual_cohesion_mpa: 0.35
+    friction_deg: 20.0
+    dilation_deg: 0.0
+    tension_mpa: 1.0
+    softening_scale: 0.00035
+  table:
+    maximum_plastic_shear: 0.003
+    point_count: 301
+
+paths:
+  monotonic:
+    engineering_shear_increment: 0.0001
+    phases: [[60, 1]]
+  unload_reload:
+    engineering_shear_increment: 0.0001
+    phases: [[35, 1], [10, -1], [35, 1]]
+
+cases:
+  - {case_id: subi_b000_p003_monotonic, beta_deg: 0.0, pressure_mpa: 3.0, path: monotonic}
+  - {case_id: subi_b010_p003_monotonic, beta_deg: 10.0, pressure_mpa: 3.0, path: monotonic}
+  - {case_id: subi_b000_p006_reload, beta_deg: 0.0, pressure_mpa: 6.0, path: unload_reload}
+  - {case_id: subi_b010_p006_reload, beta_deg: 10.0, pressure_mpa: 6.0, path: unload_reload}
+
+acceptance:
+  maximum_overall_stress_rmse_mpa: 0.0001
+  maximum_absolute_stress_error_mpa: 0.001
+  maximum_plastic_shear_error: 0.00000001
+  maximum_cohesion_error_mpa: 0.001
+  maximum_yield_onset_error_steps: 0
+  require_all_cases_yield: true

@@ -1,0 +1,96 @@
+protocol:
+  name: symbolic_model_revision_gate2a_rate_state_external_confirmation
+  version: 1.0.0
+  status: frozen_confirmation
+
+frozen_algorithm_source: configs/symbolic_model_revision_gate1c.yaml
+gate1_config: configs/symbolic_model_revision_gate1.yaml
+data_seeds: [20261103, 20261107, 20261111, 20261117, 20261123, 20261201, 20261207, 20261213, 20261219, 20261229, 20270105, 20270111]
+
+sampling:
+  observed_count: 96
+  locked_count: 128
+  audit_count: 128
+  fit_fraction: 0.70
+
+mechanisms:
+  state_evolution:
+    reference_family: ruina_slip
+    baseline_family: dieterich_aging
+    evolution_scale: 1.0
+    observed_range: [0.70, 1.30]
+    locked_range: [0.15, 4.00]
+    noise_std: 0.01
+  friction_surface:
+    reference_family: dieterich_ruina_logarithmic
+    baseline_family: direct_effect_only
+    reference_friction: 0.60
+    direct_effect: 0.012
+    state_effect: 0.018
+    observed_velocity_range: [0.70, 1.30]
+    observed_state_range: [0.70, 1.30]
+    locked_velocity_range: [0.20, 4.00]
+    locked_state_range: [0.20, 4.00]
+    noise_std: 0.0005
+
+candidate_committee:
+  source: a_priori_literature_and_generic_competitors
+  response_independent: true
+  allow_llm_calls: false
+  families_per_task: 5
+
+design:
+  initial_observation_count: 12
+  acquisition_pool_count: 192
+  maximum_new_observations: 8
+  outer_shell_only: true
+  strategies:
+    - space_filling_design
+    - random_design
+    - model_information_gain
+    - parameter_information_gain
+    - joint_structure_parameter_information_gain
+
+model_evidence:
+  weight_criterion: bayesian_information_criterion
+  bic_complexity: fitted_parameter_count
+  retain_baseline_null_model: true
+
+joint_information:
+  decomposition: chain_rule_model_identity_plus_conditional_parameters
+  model_information_estimator: gauss_hermite_scalar_gaussian
+  quadrature_order: 32
+  parameter_posterior: local_gaussian_laplace
+  parameter_prior: uniform_variance_from_fit_bounds
+
+random_design:
+  seed_offset: 93000
+
+evaluation:
+  recovery_noise_multiplier: 3.0
+  primary_budget: 8
+  report_budgets: [0, 1, 2, 4, 8]
+  bootstrap_replicates: 20000
+  bootstrap_seed: 20270201
+
+confirmation:
+  treatment: joint_structure_parameter_information_gain
+  primary_endpoint: integrated_locked_rmse
+  final_endpoint: locked_rmse
+  required_mean_superiority: [random_design, model_information_gain, space_filling_design]
+  required_final_mean_superiority: [random_design, model_information_gain]
+  required_recovery_noninferiority: [random_design, model_information_gain, space_filling_design]
+  required_exact_recovery_noninferiority: [random_design, model_information_gain, space_filling_design]
+  required_cluster_ci_superiority: [random_design, model_information_gain]
+
+study:
+  confirmatory: true
+  llm_calls: 0
+  interpretation: >-
+    Gate 2A tests external-mechanism transfer of the frozen information-design
+    criterion. It does not attribute candidate coverage to an LLM.
+  prohibited_adaptations:
+    - Change mechanisms, candidates, ranges, noise, seeds, budgets, priors, or endpoints after inspecting results.
+    - Use locked targets for fitting, weighting, acquisition, or stopping.
+    - Remove a mechanism or seed because it weakens the aggregate result.
+    - Add a missing oracle-shaped candidate after the run.

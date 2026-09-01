@@ -1,0 +1,59 @@
+case_name: ma2018_brazilian_bts
+data_type: strength_curve_external_validation
+prior_level: mechanics_informed
+input_file: data/anisotropic_rock_literature_data_package/1_Ma2018_Longmaxi_Jixi_Brazilian_BtS/data/processed/Ma2018_BtS_combined_long.csv
+
+filters:
+  dataset:
+    - Longmaxi_Shale_I
+    - Jixi_Coal
+
+columns:
+  x:
+    - beta_deg
+  y_true: mean_bts_mpa
+  y_base: predicted_bts_mpa
+  residual: residual_mean_minus_predicted_mpa
+  group: dataset
+
+source_columns:
+  angle: beta_w_deg
+  series: series
+  value: value
+  mean_series: Mean
+  predicted_series: Predicted_BtS
+
+feature_set: beta_weak_plane
+
+features:
+  include:
+    - m_beta
+    - m2_beta
+    - m4_beta
+    - sat_m2_beta_b3
+    - sin_beta
+    - cos_beta
+    - sin2_beta
+    - cos2_beta
+  forbid:
+    - tan_beta
+    - reciprocal_sin_beta
+    - reciprocal_cos_beta
+
+constraints:
+  positive_corrected_strength: true
+  bounded_endpoints: true
+  max_formula_complexity: 6
+
+validation:
+  strategies:
+    - leave_one_beta
+
+symbolic:
+  alpha_grid: [0.0, 0.001, 0.01, 0.1, 1.0]
+  max_terms:
+    rule_based: 2
+    generic: 3
+    asrc: 2
+    knowledge_asrc: 3
+    llm_max: 3

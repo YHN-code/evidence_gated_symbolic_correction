@@ -1,0 +1,80 @@
+protocol:
+  id: flac3d_uj_single_zone_validation
+  version: "1.0"
+  description: >-
+    Solver-semantic validation of the C1 Python weak-plane integrator against
+    the built-in FLAC3D 7 ubiquitous-joint model on homogeneous single-zone
+    stress paths.
+
+flac3d:
+  executable: flac3d700_console.exe
+  timeout_seconds: 300.0
+  startup_timeout_seconds: 120.0
+  dynamic_timestep: 0.000001
+  density_kg_m3: 2600.0
+
+material:
+  elastic:
+    young_mpa: 20000.0
+    poisson: 0.24
+  intact_matrix:
+    cohesion_mpa: 100.0
+    friction_deg: 40.0
+    dilation_deg: 0.0
+    tension_mpa: 100.0
+  reference_joint:
+    cohesion_mpa: 1.2
+    friction_deg: 28.0
+    dilation_deg: 0.0
+    tension_mpa: 1.0
+
+paths:
+  monotonic_shear:
+    steps: 16
+    engineering_shear_increment: 0.0001
+  reverse_shear:
+    steps: 24
+    reversal_step: 8
+    engineering_shear_increment: 0.0001
+  compression_shear:
+    steps: 16
+    engineering_shear_increment: 0.00008
+    axial_strain_ratio: 0.5
+
+cases:
+  - case_id: b000_p001_monotonic
+    beta_deg: 0.0
+    pressure_mpa: 1.0
+    path: monotonic_shear
+  - case_id: b030_p001_monotonic
+    beta_deg: 30.0
+    pressure_mpa: 1.0
+    path: monotonic_shear
+  - case_id: b060_p005_monotonic
+    beta_deg: 60.0
+    pressure_mpa: 5.0
+    path: monotonic_shear
+  - case_id: b000_p005_reverse
+    beta_deg: 0.0
+    pressure_mpa: 5.0
+    path: reverse_shear
+  - case_id: b030_p005_reverse
+    beta_deg: 30.0
+    pressure_mpa: 5.0
+    path: reverse_shear
+  - case_id: b060_p005_reverse
+    beta_deg: 60.0
+    pressure_mpa: 5.0
+    path: reverse_shear
+  - case_id: b060_p001_compression_shear
+    beta_deg: 60.0
+    pressure_mpa: 1.0
+    path: compression_shear
+
+acceptance:
+  maximum_overall_stress_rmse_mpa: 0.0001
+  maximum_case_stress_error_mpa: 0.001
+  maximum_resolved_traction_error_mpa: 0.001
+  maximum_yield_onset_error_steps: 0
+  require_joint_yield_in_cases: 4
+  require_all_cases_complete: true
