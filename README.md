@@ -12,7 +12,7 @@ are deterministic.
 ## Reproducibility scope
 
 The repository includes only the Python modules reached by the paper reproduction entry points, prespecified configurations,
-compact frozen results, and the minimal source asset needed to regenerate the
+compact frozen results, and frozen solver exports needed to regenerate the
 manuscript figures without an LLM API or FLAC3D license. Generated figures are
 not distributed in the repository. It does not include the private
 research history, local API configuration, commercial FLAC3D binaries, solver
@@ -38,7 +38,7 @@ python experiments/make_evidence_gated_paper_figures.py `
 ```
 
 The command writes PNG (600 dpi), PDF, and editable-text SVG files. It reads
-only the compact frozen CSV/JSON artifacts under `outputs/runs/`.
+compact frozen CSV/JSON artifacts under `outputs/runs/` and `data/frozen_cavern/`.
 
 ## Optional software
 
@@ -55,3 +55,17 @@ See `docs/RUNNING.md` and `docs/DATA_AND_SOFTWARE.md` for details.
 
 Citation metadata is provided in `CITATION.cff`. A DOI and final bibliographic
 record will be added after archival release.
+
+## Update scope
+
+The numerical implementation remains the initial public release. The figure
+generator has been updated to use Times New Roman (Liberation Serif or
+STIXGeneral if unavailable) and the six-MPa cavern field export.
+Exact typography requires Times New Roman installed on the rendering machine.
+
+Supplementary Section S12 is supported by frozen case-level results:
+`python experiments/verify_full_domain_results.py`.
+This recomputes aggregate statistics and checks paired-policy equality. It
+does not regenerate candidates, refit the models, or independently prove the
+algebraic certificates. The later search implementation is not substituted
+for the original primary-study implementation.

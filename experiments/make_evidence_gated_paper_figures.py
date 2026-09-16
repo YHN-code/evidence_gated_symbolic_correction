@@ -5,14 +5,13 @@ import gc
 import json
 import os
 from pathlib import Path
-import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("MPLBACKEND", "Agg")
 os.environ.setdefault("MPLCONFIGDIR", str(ROOT / "tmp" / "matplotlib"))
 
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Patch
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Patch, Polygon
 import numpy as np
 import pandas as pd
 
@@ -25,7 +24,7 @@ from asrc.utils.io import read_yaml
 
 
 DEFAULT_OUTPUT = ROOT / "paper_assets" / "asrc_evidence_gated" / "figures"
-ENGINEERING_CONTEXT = ROOT / "paper_assets" / "engineering_context" / "Fig06_hydropower_cavern_context_source"
+ENGINEERING_CONTEXT = ROOT / "data" / "frozen_cavern"
 CONFIRMATION = ROOT / "outputs" / "runs" / "semantic_evidence_guided_revision_confirmation_v1"
 GATE_AUDIT = ROOT / "outputs" / "runs" / "evidence_gate_confirmation_audit_v1"
 GATE1D = ROOT / "outputs" / "runs" / "gate1d_joint_information_confirmation_v1"
@@ -135,6 +134,7 @@ def _box(
     linestyle: str | tuple[float, tuple[float, ...]] = "-",
     title_size: float = 7.0,
     body_size: float = 6.2,
+    inset: float = 0.014,
 ) -> None:
     x, y = xy
     patch = FancyBboxPatch(
@@ -149,7 +149,7 @@ def _box(
     )
     ax.add_patch(patch)
     ax.text(
-        x + 0.014,
+        x + inset,
         y + height - 0.040,
         title,
         fontsize=title_size,
@@ -158,8 +158,8 @@ def _box(
         color=COLORS["ink"],
     )
     ax.text(
-        x + 0.014,
-        y + height - 0.105,
+        x + inset,
+        y + height - 0.130,
         body,
         fontsize=body_size,
         va="top",
@@ -183,99 +183,426 @@ def _arrow(ax: plt.Axes, start: tuple[float, float], end: tuple[float, float], c
 
 
 def figure_architecture(output_dir: Path) -> list[Path]:
-    fig, ax = plt.subplots(figsize=(7.4, 2.65))
+    # Use a restrained journal-figure treatment for the architecture diagram.
+    # STIX math glyphs visually match Times New Roman more closely than the
+    # default DejaVu math set.
+    previous_rc = {
+        key: plt.rcParams[key]
+        for key in ("font.family", "font.serif", "mathtext.fontset")
+    }
+    plt.rcParams.update(
+        {
+            "font.family": "serif",
+            "font.serif": ["Times New Roman", "Liberation Serif", "STIXGeneral"],
+            "mathtext.fontset": "stix",
+        }
+    )
+    fig = plt.figure(figsize=(5.5, 2.90))
+    ax = fig.add_axes([0.0, 0.0, 1.0, 1.0])
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.axis("off")
 
-    # A restrained primary path keeps the evidence gate as the only emphasized module.
-    y, height = 0.58, 0.34
-    neutral_face = "#FAFBFB"
-    neutral_edge = "#929DA5"
-    _box(
-        ax,
-        (0.035, y),
-        0.125,
-        height,
+    ink = COLORS["ink"]
+    navy = COLORS["navy"]
+    body = "#46515B"
+    edge = "#7F8A92"
+    pale = "#FFFFFF"
+
+    def rounded_box(
+        x: float,
+        y: float,
+        width: float,
+        height: float,
+        *,
+        facecolor: str = pale,
+        edgecolor: str = edge,
+        linewidth: float = 0.80,
+        linestyle: str | tuple[float, tuple[float, ...]] = "-",
+        radius: float = 0.0025,
+    ) -> None:
+        ax.add_patch(
+            FancyBboxPatch(
+                (x, y),
+                width,
+                height,
+                boxstyle=f"round,pad=0.004,rounding_size={radius}",
+                linewidth=linewidth,
+                linestyle=linestyle,
+                edgecolor=edgecolor,
+                facecolor=facecolor,
+            )
+        )
+
+    def connector(
+        start: tuple[float, float],
+        end: tuple[float, float],
+        *,
+        color: str = "#64727E",
+        linewidth: float = 0.85,
+        linestyle: str | tuple[float, tuple[float, ...]] = "-",
+    ) -> None:
+        ax.add_patch(
+            FancyArrowPatch(
+                start,
+                end,
+                arrowstyle="-|>",
+                mutation_scale=7,
+                linewidth=linewidth,
+                linestyle=linestyle,
+                color=color,
+                connectionstyle="arc3,rad=0",
+            )
+        )
+
+    def chip(x: float, y: float, width: float, height: float, label: str, *, fontsize: float = 6.80) -> None:
+        rounded_box(
+            x,
+            y,
+            width,
+            height,
+            facecolor="#FFFFFF",
+            edgecolor="#B4BCC1",
+            linewidth=0.60,
+            radius=0.003,
+        )
+        ax.text(
+            x + width / 2,
+            y + height / 2,
+            label,
+            fontsize=fontsize,
+            ha="center",
+            va="center",
+            linespacing=1.0,
+            color=body,
+        )
+
+    main_y = 0.640
+
+    # Baseline residual and calibration data.
+    base_x, base_y, base_w, base_h = 0.015, 0.550, 0.155, 0.200
+    rounded_box(base_x, base_y, base_w, base_h)
+    ax.text(
+        base_x + base_w / 2,
+        base_y + base_h - 0.038,
         "Baseline",
-        r"$M_0(\mathbf{x})$" "\nobservations\ndomain limits",
-        neutral_face,
-        neutral_edge,
+        fontsize=8.00,
+        fontweight="bold",
+        ha="center",
+        va="top",
+        color=ink,
     )
-    _box(
-        ax,
-        (0.205, y),
-        0.165,
-        height,
-        "Candidate pool",
-        "PySR\noptional LLM\ntemplates",
-        neutral_face,
-        neutral_edge,
+    ax.text(
+        base_x + base_w / 2,
+        base_y + 0.092,
+        r"$r(\mathbf{x})=y-M_0(\mathbf{x})$",
+        fontsize=7.55,
+        ha="center",
+        va="center",
+        color=body,
     )
-    _box(
-        ax,
-        (0.415, y),
-        0.185,
-        height,
-        "Fit and verify",
-        "typed checks\ncoefficient fitting\ngrouped validation\nphysical checks",
-        neutral_face,
-        neutral_edge,
+    ax.text(
+        base_x + base_w / 2,
+        base_y + 0.038,
+        "calibration data",
+        fontsize=6.95,
+        ha="center",
+        va="center",
+        color=body,
     )
-    _box(
-        ax,
-        (0.645, y),
-        0.165,
-        height,
+
+    # Parallel expression sources are encoded as equal chips, not a text list.
+    cand_x, cand_y, cand_w, cand_h = 0.190, 0.520, 0.210, 0.260
+    rounded_box(cand_x, cand_y, cand_w, cand_h, facecolor="#FFFFFF")
+    ax.text(
+        cand_x + cand_w / 2,
+        cand_y + cand_h - 0.036,
+        "Candidate sources",
+        fontsize=7.70,
+        fontweight="bold",
+        ha="center",
+        va="top",
+        color=ink,
+    )
+    chip(cand_x + 0.018, cand_y + 0.100, 0.080, 0.058, "PySR", fontsize=7.05)
+    chip(cand_x + 0.112, cand_y + 0.100, 0.080, 0.058, "LLM", fontsize=7.05)
+    chip(cand_x + 0.018, cand_y + 0.030, 0.174, 0.052, "Templates", fontsize=6.90)
+
+    # The verifier is a numbered sequence with short, consistently sized labels.
+    eval_x, eval_y, eval_w, eval_h = 0.420, 0.500, 0.265, 0.300
+    rounded_box(eval_x, eval_y, eval_w, eval_h, facecolor="#FFFFFF")
+    ax.text(
+        eval_x + eval_w / 2,
+        eval_y + eval_h - 0.036,
+        "Deterministic verifier",
+        fontsize=7.65,
+        fontweight="bold",
+        ha="center",
+        va="top",
+        color=ink,
+    )
+    step_y = 0.640
+    step_xs = [0.456, 0.515, 0.582, 0.654]
+    step_labels = ["Compile", "Fit", "Group\nCV", "Physical\nchecks"]
+    node_half_gap = 0.011
+    for index, (step_x, label) in enumerate(zip(step_xs, step_labels), start=1):
+        # Point-sized markers remain circular regardless of the axes aspect ratio.
+        ax.scatter(
+            [step_x],
+            [step_y],
+            s=58,
+            marker="o",
+            facecolor=navy,
+            edgecolor=navy,
+            linewidths=0.55,
+            zorder=3,
+        )
+        ax.text(
+            step_x,
+            step_y,
+            str(index),
+            fontsize=5.70,
+            fontweight="bold",
+            ha="center",
+            va="center",
+            color="#FFFFFF",
+            zorder=4,
+        )
+        ax.text(
+            step_x,
+            step_y - 0.052,
+            label,
+            fontsize=6.65,
+            ha="center",
+            va="center",
+            linespacing=0.92,
+            color=body,
+        )
+    for left, right in zip(step_xs[:-1], step_xs[1:]):
+        connector(
+            (left + node_half_gap, step_y),
+            (right - node_half_gap, step_y),
+            color="#71808A",
+            linewidth=0.55,
+        )
+
+    # Grouped-validation observations enter the verifier, not candidate generation.
+    val_x, val_y, val_w, val_h = 0.435, 0.870, 0.220, 0.072
+    rounded_box(val_x, val_y, val_w, val_h, facecolor="#F7F8F8", linewidth=0.65)
+    ax.text(
+        val_x + val_w / 2,
+        val_y + val_h / 2,
+        "Grouped-validation data",
+        fontsize=7.20,
+        ha="center",
+        va="center",
+        color=body,
+    )
+    connector((val_x + val_w / 2, val_y), (val_x + val_w / 2, eval_y + eval_h))
+
+    # Evidence gate: the diamond carries only the executable decision criterion.
+    gate_cx, gate_cy = 0.765, main_y
+    gate_w, gate_h = 0.110, 0.180
+    gate_vertices = [
+        (gate_cx, gate_cy + gate_h / 2),
+        (gate_cx + gate_w / 2, gate_cy),
+        (gate_cx, gate_cy - gate_h / 2),
+        (gate_cx - gate_w / 2, gate_cy),
+    ]
+    ax.add_patch(
+        Polygon(
+            gate_vertices,
+            closed=True,
+            facecolor="#EAF1F5",
+            edgecolor=navy,
+            linewidth=1.10,
+        )
+    )
+    ax.text(
+        gate_cx,
+        gate_cy + gate_h / 2 + 0.035,
         "Evidence gate",
-        "near-equivalent set\nresponse spread\nimpact threshold",
-        "#EDF3F6",
-        COLORS["navy"],
-        linewidth=1.35,
-        title_size=7.25,
+        fontsize=7.35,
+        fontweight="bold",
+        ha="center",
+        va="center",
+        color=ink,
     )
-    _box(
-        ax,
-        (0.855, y),
-        0.110,
-        height,
-        "Outcome",
-        "accepted\nprovisional\nrejected",
-        neutral_face,
-        neutral_edge,
+    ax.text(
+        gate_cx,
+        gate_cy,
+        r"$A>2\sigma$",
+        fontsize=7.35,
+        ha="center",
+        va="center",
+        color=navy,
     )
 
-    center_y = y + height / 2
-    for start, end in (
-        ((0.160, center_y), (0.205, center_y)),
-        ((0.370, center_y), (0.415, center_y)),
-        ((0.600, center_y), (0.645, center_y)),
-        ((0.810, center_y), (0.855, center_y)),
-    ):
-        _arrow(ax, start, end)
+    # Reporting states fit within a wider terminal box.
+    report_x, report_y, report_w, report_h = 0.855, 0.550, 0.140, 0.200
+    rounded_box(report_x, report_y, report_w, report_h)
+    ax.text(
+        report_x + report_w / 2,
+        report_y + report_h - 0.035,
+        "Status",
+        fontsize=7.60,
+        fontweight="bold",
+        ha="center",
+        va="top",
+        color=ink,
+    )
+    status_rows = [
+        (report_y + 0.100, COLORS["teal"], "accepted"),
+        (report_y + 0.064, "#C98A1B", "provisional"),
+        (report_y + 0.028, "#7B858D", "rejected"),
+    ]
+    for status_y, status_color, label in status_rows:
+        ax.scatter([report_x + 0.026], [status_y], s=10, color=status_color, zorder=4, linewidths=0)
+        ax.text(
+            report_x + 0.040,
+            status_y,
+            label,
+            fontsize=6.90,
+            ha="left",
+            va="center",
+            color=body,
+        )
 
-    # The lower branch is subordinate: it is entered only when the gate remains unresolved.
-    acq_x, acq_y, acq_w, acq_h = 0.490, 0.12, 0.320, 0.22
-    _box(
-        ax,
-        (acq_x, acq_y),
+    # The locked test is opened only after the outcome status has been fixed.
+    lock_x, lock_y, lock_w, lock_h = 0.855, 0.885, 0.140, 0.060
+    rounded_box(
+        lock_x,
+        lock_y,
+        lock_w,
+        lock_h,
+        facecolor="#FFFFFF",
+        edgecolor=navy,
+        linewidth=0.90,
+        linestyle=(0, (3, 2)),
+    )
+    ax.text(
+        lock_x + lock_w / 2,
+        lock_y + lock_h / 2,
+        "Locked test",
+        fontsize=7.05,
+        fontweight="bold",
+        ha="center",
+        va="center",
+        color=ink,
+    )
+
+    connector(
+        (report_x + report_w / 2, report_y + report_h),
+        (lock_x + lock_w / 2, lock_y),
+        color=navy,
+        linewidth=0.80,
+        linestyle=(0, (3, 2)),
+    )
+
+    # Main path uses equal vertical alignment and fixed horizontal gaps.
+    connector((base_x + base_w, main_y), (cand_x, main_y))
+    connector((cand_x + cand_w, main_y), (eval_x, main_y))
+    connector((eval_x + eval_w, main_y), (gate_cx - gate_w / 2, main_y))
+    connector((gate_cx + gate_w / 2, main_y), (report_x, main_y))
+    no_x = (gate_cx + gate_w / 2 + report_x) / 2
+    ax.text(no_x, main_y + 0.028, "no", fontsize=6.55, ha="center", va="center", color=body)
+
+    # Conditional acquisition: the query pool is an admissible design set, not observed data.
+    pool_x, pool_y, pool_w, pool_h = 0.240, 0.170, 0.160, 0.085
+    rounded_box(pool_x, pool_y, pool_w, pool_h, facecolor="#F7F8F8", linewidth=0.65)
+    ax.text(
+        pool_x + pool_w / 2,
+        pool_y + pool_h / 2,
+        r"Query pool $\mathcal{Q}$",
+        fontsize=7.10,
+        ha="center",
+        va="center",
+        color=body,
+    )
+
+    acq_x, acq_y, acq_w, acq_h = 0.430, 0.130, 0.270, 0.180
+    rounded_box(
+        acq_x,
+        acq_y,
         acq_w,
         acq_h,
-        "Acquire evidence",
-        "prespecified acquisition policy",
-        "#FBFCFC",
-        "#70818D",
-        linewidth=0.9,
+        facecolor="#FCFCFC",
+        edgecolor="#70818D",
+        linewidth=0.80,
         linestyle=(0, (3, 2)),
-        title_size=6.9,
-        body_size=5.95,
     )
-    _arrow(ax, (0.728, y), (0.728, acq_y + acq_h), COLORS["navy"])
-    _arrow(ax, (0.555, acq_y + acq_h), (0.555, y), COLORS["navy"])
-    ax.text(0.739, 0.460, "if unresolved", fontsize=6.1, color=COLORS["navy"], ha="left", va="center")
-    ax.text(0.544, 0.460, "new evidence", fontsize=6.1, color=COLORS["navy"], ha="right", va="center")
-    return _save(fig, output_dir, "Fig01_evidence_gated_architecture")
+    ax.text(
+        acq_x + acq_w / 2,
+        acq_y + acq_h - 0.035,
+        "Acquire evidence",
+        fontsize=7.85,
+        fontweight="bold",
+        ha="center",
+        va="top",
+        color=ink,
+    )
+    chip(acq_x + 0.016, acq_y + 0.030, 0.108, 0.060, "Space filling", fontsize=6.70)
+    chip(
+        acq_x + 0.140,
+        acq_y + 0.030,
+        0.114,
+        0.060,
+        "Disagreement\n" r"$D(\mathbf{x})$",
+        fontsize=6.45,
+    )
+    connector((pool_x + pool_w, pool_y + pool_h / 2), (acq_x, pool_y + pool_h / 2))
 
+    # Orthogonal yes branch and feedback keep loop geometry explicit.
+    branch_x = acq_x + acq_w - 0.040
+    branch_y = 0.380
+    branch_top = gate_cy - gate_h / 2
+    branch_bottom = acq_y + acq_h
+    ax.plot(
+        [gate_cx, gate_cx, branch_x, branch_x],
+        [branch_top, branch_y, branch_y, branch_bottom],
+        color=navy,
+        linewidth=0.90,
+        solid_capstyle="butt",
+        solid_joinstyle="miter",
+    )
+    ax.add_patch(
+        Polygon(
+            [
+                (branch_x, branch_bottom),
+                (branch_x - 0.006, branch_bottom + 0.014),
+                (branch_x + 0.006, branch_bottom + 0.014),
+            ],
+            closed=True,
+            facecolor=navy,
+            edgecolor=navy,
+            linewidth=0,
+            zorder=4,
+        )
+    )
+    ax.text(
+        gate_cx + 0.013,
+        (branch_top + branch_y) / 2,
+        "yes",
+        fontsize=6.55,
+        ha="left",
+        va="center",
+        color=navy,
+    )
+
+    feedback_x = acq_x + 0.060
+    connector((feedback_x, acq_y + acq_h), (feedback_x, eval_y), color=navy, linewidth=0.90)
+    ax.text(
+        feedback_x - 0.010,
+        (acq_y + acq_h + eval_y) / 2,
+        "new evidence",
+        fontsize=6.85,
+        ha="right",
+        va="center",
+        color=navy,
+    )
+    paths = _save(fig, output_dir, "Fig01_evidence_gated_architecture")
+    plt.rcParams.update(previous_rc)
+    return paths
 
 def figure_patch_algebra(output_dir: Path) -> list[Path]:
     x = np.linspace(0.0, 1.0, 240)
@@ -297,7 +624,7 @@ def figure_patch_algebra(output_dir: Path) -> list[Path]:
         ax.plot(x, baseline, color=COLORS["gray"], linestyle="--", label="Baseline $M_0$")
         ax.plot(x, y, color=(COLORS["teal"], COLORS["blue"], COLORS["purple"])[idx], label="Revised $M$")
         ax.fill_between(x, baseline, y, color=(COLORS["teal"], COLORS["blue"], COLORS["purple"])[idx], alpha=0.10)
-        ax.set_title(title, pad=16, fontweight="bold")
+        ax.set_title(title, pad=16)
         ax.text(0.5, 1.04, formula, transform=ax.transAxes, ha="center", va="bottom", fontsize=8.2)
         ax.set_xlabel("Declared input domain")
         ax.grid(axis="y", color="#D9DEE2", linewidth=0.5)
@@ -358,7 +685,7 @@ def figure_confirmation(output_dir: Path) -> list[Path]:
         xx,
         ["No\nacquisition", "Gated space\nfilling", "Gated\ndisagreement"],
     )
-    ax.set_ylabel("Confirmation cases (of 32)")
+    ax.set_ylabel("Evaluation cases (of 32)")
     ax.set_ylim(0, 25.5)
     ax.legend(
         frameon=False,
@@ -432,7 +759,7 @@ def figure_confirmation(output_dir: Path) -> list[Path]:
     ax.set_ylim(0.085, 0.205)
     ax.set_xlabel("Mean added observations per case")
     ax.set_ylabel("Mean normalized locked-test RMSE")
-    ax.set_title("Error-query tradeoff")
+    ax.set_title("Cost-control diagnostic")
     _panel_label(ax, "(d)")
 
     for ax in axes.flat:
@@ -542,7 +869,7 @@ def figure_constitutive_flac3d(output_dir: Path) -> list[Path]:
     ax.plot(lim, lim, color=COLORS["ink"], linestyle="--", linewidth=0.9)
     ax.set_xlim(lim)
     ax.set_ylim(lim)
-    ax.set_aspect("equal", adjustable="box")
+    ax.set_aspect("equal", adjustable="datalim")
     ax.set_xlabel("FLAC3D stress (MPa)")
     ax.set_ylabel("Python replay stress (MPa)")
     ax.set_title("Ubiquitous-joint replay")
@@ -557,7 +884,7 @@ def figure_constitutive_flac3d(output_dir: Path) -> list[Path]:
     ax.set_xlabel(r"Plastic shear state ($\times10^{-3}$)")
     ax.set_ylabel("Cohesion (MPa)")
     ax.set_title("Strain-softening replay")
-    ax.text(0.04, 0.94, r"Stress RMSE = $7.61\times10^{-6}$ MPa", transform=ax.transAxes, va="top", fontsize=7.4)
+    ax.text(0.96, 0.94, r"Stress RMSE = $7.61\times10^{-6}$ MPa", transform=ax.transAxes, ha="right", va="top", fontsize=7.4)
     _panel_label(ax, "(d)")
 
     for ax in axes.flat:
@@ -810,16 +1137,17 @@ def figure_literature(output_dir: Path) -> list[Path]:
 
 
 def copy_engineering_context(output_dir: Path) -> list[Path]:
-    """Copy the frozen FLAC3D cavern field export into the new paper bundle."""
-    output_dir.mkdir(parents=True, exist_ok=True)
-    paths: list[Path] = []
-    for suffix in ("png", "pdf", "svg"):
-        source = ENGINEERING_CONTEXT.with_suffix(f".{suffix}")
-        _require([source])
-        target = output_dir / f"Fig06_hydropower_cavern_context.{suffix}"
-        shutil.copy2(source, target)
-        paths.append(target)
-    return paths
+    """Render the same frozen six-MPa case used by the response histories."""
+    from asrc.plotting.cavern_context import plot_flac3d_cavern_setup
+
+    field_path = ENGINEERING_CONTEXT / "cavern_field.csv"
+    stage_path = ENGINEERING_CONTEXT / "cavern_case_result.csv"
+    _require([field_path, stage_path])
+    return [Path(path) for path in plot_flac3d_cavern_setup(
+        pd.read_csv(field_path), pd.read_csv(stage_path), output_dir,
+        beta_deg=45.0, psi_deg=30.0, major_stress_mpa=6.0,
+        output_stem="Fig06_hydropower_cavern_context",
+    )]
 
 
 def make_all(output_dir: Path) -> list[Path]:

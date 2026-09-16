@@ -1,0 +1,91 @@
+[
+  {
+    "path": "outputs/runs/full_domain_evidence_guided_revision_confirmation_v3/metrics/evidence_guided_confirmation_results.csv",
+    "sha256": "0c4912200d8f230379c1d442c44d7854d1db5ed72a81e8f58dbf2d48db0b5f4f",
+    "columns": [
+      "task_id",
+      "mechanism_class",
+      "data_seed",
+      "strategy",
+      "selected_proposal_id",
+      "selected_source_labels",
+      "selected_formula",
+      "validation_rmse",
+      "locked_rmse",
+      "baseline_locked_rmse",
+      "normalized_locked_rmse",
+      "complexity",
+      "stability_violations",
+      "corrected_behavior_recovered",
+      "acquisitions_used",
+      "initial_gate_triggered",
+      "final_ambiguity_class",
+      "final_equivalent_candidate_count",
+      "final_normalized_maximum_pairwise_rmse",
+      "strict_structure_candidate_covered",
+      "strict_structure_reached_final_stage",
+      "selected_strict_structure"
+    ]
+  },
+  {
+    "path": "outputs/runs/full_domain_evidence_guided_revision_confirmation_v3/metrics/evidence_guided_confirmation_equivalent_candidates.csv",
+    "sha256": "64afc413bbf2ab498cc4a1aeda25f527cb580af4ef6f125ea8c6cd0d61bd45e7",
+    "columns": [
+      "task_id",
+      "mechanism_class",
+      "data_seed",
+      "strategy",
+      "proposal_id",
+      "source_labels",
+      "formula",
+      "parameter_values",
+      "complexity",
+      "robust_validation_risk",
+      "selected_representative"
+    ]
+  },
+  {
+    "path": "outputs/runs/full_domain_evidence_guided_revision_confirmation_v3/metrics/evidence_guided_confirmation_trajectory.csv",
+    "sha256": "f3dba8bcf07b67966a5f89dc6d4a830f5a942d18eb4dd77be4169ebf4920529e",
+    "columns": [
+      "task_id",
+      "mechanism_class",
+      "data_seed",
+      "strategy",
+      "observation_count",
+      "selected_proposal_id",
+      "validation_rmse",
+      "locked_rmse",
+      "stability_violations",
+      "gate_triggered",
+      "gate_reason",
+      "equivalent_candidate_count",
+      "normalized_prediction_ambiguity"
+    ]
+  },
+  {
+    "path": "outputs/runs/full_domain_evidence_guided_revision_confirmation_v3/reports/posthoc_parameterization_audit.json",
+    "sha256": "5dd560bc25c262f767e4a18c2d8f57fd8e06ec255a2e9e4606486a580c55c28e",
+    "row_fields": [
+      "task_id",
+      "mechanism_class",
+      "data_seed",
+      "strategy",
+      "proposal_id",
+      "formula",
+      "parameter_values",
+      "selected_representative",
+      "status",
+      "coordinate_equalities",
+      "candidate_jacobian",
+      "reference_jacobian",
+      "normalization_denominators",
+      "conditions"
+    ]
+  },
+  {
+    "path": "configs/full_domain_evidence_guided_revision_confirmation_v3.yaml",
+    "sha256": "a616b9ff77b735d6fd3ea3c64d10f6d421f4820a99cb0f4c2b389fb3a8ee10b2",
+    "omitted_field": "protocol.protocol_document"
+  }
+]

@@ -1,0 +1,209 @@
+protocol:
+  name: full_domain_evidence_guided_revision_out_of_sample_confirmation
+  version: 3.0.0
+  status: registered_before_execution
+  registered_at: '2026-09-11'
+  research_question: With fresh hybrid PySR and fit-feedback LLM candidates, unseen
+    data seeds, and the complete declared observation domain, does ambiguity-gated
+    predictive-disagreement acquisition improve the selected explicit correction relative
+    to the identical candidate portfolio without new observations?
+methods:
+- no_acquisition
+- conditional_space_filling
+- evidence_guided_predictive_disagreement
+prior_development_data_seeds:
+- 2092611599
+- 2383867976
+- 3610172792
+- 338961480
+- 1861959406
+- 4238863871
+- 813519892
+- 2079297989
+- 1812275758
+- 3756040860
+- 1158657079
+- 2844560664
+- 516005977
+- 1882852668
+- 213639770
+- 1060620387
+- 1108934464
+- 3314893829
+- 364727931
+- 3856418359
+- 1355935353
+- 1012132659
+- 1876820008
+- 3763605151
+confirmation:
+  enabled: true
+  seed_sequence_entropy: 20260913
+  generation_data_seeds:
+  - 1936607229
+  - 2324701358
+  - 1090645961
+  - 2164999260
+  - 3799979468
+  - 233033901
+  - 240857411
+  - 3283209030
+  task_count: 4
+  expected_paired_cells: 32
+  require_fresh_candidates_per_cell: true
+  prohibit_candidate_replay: true
+sampling:
+  observed_count: 112
+  locked_count: 180
+  audit_count: 180
+  fit_fraction: 0.7
+support_design:
+  visible_support_expansion_fraction: 1.0
+  locked_test_scope: independent_same_domain
+  preserve_observation_count: true
+  preserve_normalized_sample_coordinates: true
+  preserve_noise_realization: true
+  preserve_partitions: true
+  preserve_locked_set: true
+candidate_budget:
+  maximum_source_candidates: 12
+  maximum_hybrid_candidates: 24
+  equal_source_generation_cap: true
+development:
+  maximum_candidates: 12
+evaluation:
+  parameter_lower_bound: -8.0
+  parameter_upper_bound: 8.0
+  parameter_optimizer: joint_nls
+  multistart_count: 4
+  maximum_function_evaluations: 500
+  complexity_penalty_fraction: 0.001
+  recovery_noise_multiplier: 3.0
+  local_initialization_bound: 1.5
+  local_initialization_fraction: 0.25
+  space_filling_initialization: true
+  safeguard_degenerate_zero_start: true
+  extrapolation_guard_enabled: true
+  extrapolation_guard_expansion_factor: 5.0
+  extrapolation_guard_sample_count: 256
+  extrapolation_guard_clip_to_locked_domain: true
+  extrapolation_guard_include_corners: true
+  extrapolation_guard_max_corner_dimensions: 4
+  stability_magnitude_multiplier: 20.0
+  shape_guard_axis_points: 24
+  shape_guard_context_count: 8
+  shape_guard_relative_tolerance: 1.0e-08
+hybrid_candidate_racing:
+  minimum_survivors: 3
+  stages:
+  - stage_id: low_cost_screen
+    maximum_function_evaluations: 20
+    multistart_count: 1
+    promote_fraction: 0.5
+  - stage_id: evidence_triage
+    maximum_function_evaluations: 80
+    multistart_count: 1
+    promote_fraction: 0.5
+  - stage_id: parameter_refine
+    maximum_function_evaluations: 220
+    multistart_count: 2
+    promote_fraction: 0.5
+  - stage_id: risk_verify
+    maximum_function_evaluations: 500
+    multistart_count: 4
+    promote_fraction: 1.0
+risk_selection:
+  validation_environment_count: 3
+  minimum_environment_rows: 6
+  one_standard_error_multiplier: 1.0
+ambiguity_gate:
+  snapshot_stage_id: parameter_refine
+  minimum_equivalent_candidates: 2
+  minimum_prediction_difference_noise_multiplier: 2.0
+active_design:
+  maximum_new_observations: 3
+  acquisition_pool_count: 256
+  outer_shell_only: false
+  joint_information_quadrature_order: 24
+pysr:
+  niterations: 80
+  populations: 4
+  population_size: 28
+  maxsize: 24
+  binary_operators:
+  - +
+  - '-'
+  - '*'
+  - /
+  - ^
+  unary_operators:
+  - sin
+  - cos
+  - tanh
+  - exp
+  - log
+  constraints:
+    ^:
+    - -1
+    - 1
+  progress: false
+  verbosity: 0
+llm:
+  candidate_context_mode: fit_feedback_revision
+  mode: typed_repair
+  generation_strategy: fit_feedback_revision
+  candidates_per_call: 6
+  maximum_generation_calls: 2
+  feedback_top_k: 3
+  feedback_maximum_function_evaluations: 100
+  feedback_multistart_count: 2
+  transport_retry_attempts: 5
+  transport_retry_wait_seconds: 25
+  reasoning_effort_override: high
+  max_tokens_override: 12000
+  truncation_batch_reductions: 2
+primary_analysis:
+  endpoint: normalized_locked_rmse
+  treatment: evidence_guided_predictive_disagreement
+  primary_comparator: no_acquisition
+  descriptive_comparator: conditional_space_filling
+  bootstrap_replicates: 20000
+  bootstrap_seed: 20260914
+  alpha: 0.05
+  require_negative_mean_difference: true
+  require_negative_cluster_ci_upper: true
+  require_one_sided_sign_flip_below_alpha: true
+  maximum_worsened_triggered_fraction: 0.25
+  minimum_resolved_triggered_fraction: 0.5
+  require_zero_physical_violations: true
+structural_endpoints:
+  strict_template_match: post_selection_reporting_only
+  response_family_match: post_selection_reporting_only
+  oracle_access_before_selection: prohibited
+reporting:
+  confirmation_only: true
+  locked_target_used_for_generation_or_selection: false
+  report_space_filling_as_descriptive_control: true
+  report_equivalent_candidate_sets: true
+  report_llm_candidate_attribution: true
+  report_structural_endpoints_regardless_of_outcome: true
+  interpretation_boundary: This experiment tests fresh candidate generation and active
+    evidence acquisition within the declared observation domain. It does not test
+    unseen-family transfer or field-scale constitutive validity.
+prohibited_adaptations:
+- Reuse candidates from any development, diagnostic, or earlier confirmation run.
+- Change seeds, tasks, support, candidate budgets, gate threshold, or acquisition
+  budget after execution starts.
+- Use locked responses or oracle structure for generation, fitting, selection, acquisition,
+  or stopping.
+- Add mechanism-specific candidate prompts, templates, constraints, or acquisition
+  rules.
+- Replace failed cells, omit unfavorable outcomes, or tune the protocol after inspecting
+  partial results.
+- Claim predictive disagreement is superior to space filling unless the descriptive
+  comparison supports it.
+candidate_compilation:
+  policy: rational_continuous_extension_v1
+  scope: after_generation_before_shared_racing
+  preserve_raw_candidates: true
+  applies_to_all_acquisition_strategies: true
